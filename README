@@ -4,7 +4,6 @@ date: 2015.02.01
 -----------------------
 
 1. Pairwise protein structure alignment or structure homolog search
-
 [Reference]
 --------------------------------------------------------
 Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.
@@ -23,9 +22,9 @@ ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM,
 ------------------------------------------------------------
 
 
-------
+----------------------------------
 setup for structure homolog search
-------
+----------------------------------
 Enclosed in this package please find an example PDB database in databases/CAL_PDB .
 reference_pdb_list contains all the proteins in this folder. Please do not delete or change
 CAL_PDB and reference_pdb_list.
@@ -43,12 +42,17 @@ Note: If you just want to do pairwise or multiple structure alignment, you do no
 have to download these databases, which are supposed to be used for only structure homolog search.
 You can also build your own database for structure homology search.
 
+3. CAL_PDB 
+If databases/CAL_PDB/ does not exist, create one.
+copy or link all the .pdb files to this directory for reference calculation. 
+The original compressed tar-ball file of CAL_PDB/ could be found at databases/CAL_PDB.tar.gz
+
 
 --------
 compile
 --------
 cd source_code
-make
+	make
 cd ../
 
 
