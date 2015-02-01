@@ -1,5 +1,10 @@
 #========== Examples ================#
 
+#-- PDB_Tool example ---#
+cd PDB_Tool_example
+	./PDB_Tool -i 1col.pdb -r A -o 1colA.pdb
+cd ../
+
 #--  DeepScore example ---#
 cd DeepScore_example
 	./DeepScore 1col.pdb 1cpc.pdb -a 1col_1cpc.fasta
@@ -35,4 +40,5 @@ The following folders contain some large scale benchmarks described in our paper
 
 5. MALIDUP
 
+Which could be downloaded at http://raptorx.uchicago.edu/download/
 
