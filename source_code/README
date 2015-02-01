@@ -1,0 +1,25 @@
+Part 0. To compile all the executables, simply type "make" in the current directory
+make
+
+Part I. To compile PDB_Tool, type
+make PDB_Tool
+
+Part II. To compile DeepScore, type
+make DeepScore
+
+Part III. To compile DeepAlign, type
+make DeepAlign
+
+Part IV. To compile 3DCOMB, type
+make 3DCOMB
+
+Part V. To compile DeepSearch, type
+make DeepSearch
+You can also compile a MPI version of DeepSearch by change Makefile a little bit.
+
+Part VI. To compile util, type
+make util
+
+The compiled executables will be put in the ../ directory.
+
+

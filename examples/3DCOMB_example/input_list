@@ -1,0 +1,4 @@
+input_pdbs/1HLB.pdb
+input_pdbs/1HLM.pdb A
+input_pdbs/1BAB.pdb A:@-98
+input_pdbs/1BAB.pdb B:56-@

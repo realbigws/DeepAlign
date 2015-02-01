@@ -1,0 +1,38 @@
+#========== Examples ================#
+
+#--  DeepScore example ---#
+cd DeepScore_example
+	./DeepScore 1col.pdb 1cpc.pdb -a 1col_1cpc.fasta
+cd ../
+
+#--  DeepAlign example ---#
+cd DeepAlign_example
+	./DeepAlign 1col.pdb 1cpc.pdb
+	./DeepAlign Case_Study_1/d1h99a1.pdb Case_Study_1/d1h99a2.pdb
+	./DeepAlign Case_Study_2/d1nekc_.pdb Case_Study_2/d1nekd_.pdb
+	./DeepAlign Case_Study_3/d1ef5a_.pdb Case_Study_3/d1ndda_.pdb
+cd ../
+
+#--  3DCOMB example ---#
+cd 3DCOMB_example
+	./3DCOMB -i input_list
+	./3DCOMB -i SABmark_323_list
+	./3DCOMB -i SABmark_124_list
+	./3DCOMB -i SABmark_118_list
+cd ../
+
+
+#=========== Benchmarks ==============#
+The following folders contain some large scale benchmarks described in our papers.
+
+1. HOMSTRAD
+
+2. SABmark
+
+3. CDD
+
+4. MALISAM
+
+5. MALIDUP
+
+

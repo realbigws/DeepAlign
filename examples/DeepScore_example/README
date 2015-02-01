@@ -1,0 +1,109 @@
+-----------------------------
+DeepScore V1.03 [Mar-12-2014]
+-----------------------------
+
+Files		         Comments
+1. README                This readme file
+2. DeepScore             DeepScore executable
+3. 1col.pdb              Example protein A
+4. 1cpc.pdb              Example protein B
+5. 1col_1cpc.fasta       An alignment between protein A and B (Note: protein A sequence must be placed before protein B sequence)
+
+             ========================
+               DeepScore is compiled 
+                 and tested on the 
+                 following system
+             ========================
+--------------------------------------------
+Linux version: Ubuntu/Linaro 4.4.4-14ubuntu5
+CPU: Intel(R) Xeon(R) CPU E5-2630 @ 2.30GHz
+--------------------------------------------
+
+
+             ========================
+              DeepScore instructions
+             ========================
+                          
+Reference: 
+Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.
+   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY
+                        Scientific Reports, 3, 1448, (2013)
+
+
+After installing the package on your Linux system, please make the
+file DeepScore executable by using command "chmod +x DeepScore"
+
+
+
+USAGE: DeepScore A.pdb B.pdb -a A-B.fasta -o out_name
+----------------------------------------------------
+A and B represent two input protein files (required)
+-a: an alignment between the input two proteins.
+    If not provided, then a sequence alignment will be generated for evaluation.
+    Note that in this alignment file, protein A sequence must be placed before protein B sequence. 
+
+-o: the output name. If not specified, then only screen out the results.
+
+-s: if specified, and the output name is also specified,
+    then output the script for RasMol or JMol.
+     
+
+
+              ==================
+               DeepScore output
+              ==================
+                   
+I. Four output files of DeepScore will be generated, 
+   if -o option is specified.
+
+  File Name          Description
+-----------------------------------------------------------------
+[out_name].fasta      Pairwise structure alignment in FASTA format.
+[out_name].pdb        Coordinates of residues after superposition
+                        in .pdb format.
+[out_name].score      The output score as well as the rigid-body 
+                        transformations for superposing proteins.
+                        See next part for details.
+[out_name].local      A more human readable alignment format,
+                        contains RMSD for each aligned position, 
+                        and CLE (conformational letter).
+[out_name].scp        The script file for display in RasMol or JMol.
+-----------------------------------------------------------------
+
+
+II. [out_name].score format
+
+name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> 
+ LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID
+
+name1:     Name of the first protein
+name2:     Name of the second protein
+len1:      Length of the first protein
+len2:      Length of the second protein
+BLOSUM:    BLOSUM62 score of the alignment (in 0.5 bit)
+CLESUM:    CLESUM score of the alignment (in 0.5 bit)
+DeepScore: DeepScore of the alignment, calculated by 
+             {max(0,BLOSUM(i,j))+CLESUM(i,j)}*d(i,j)*v(i,j)
+LALI:      Length of alignment
+RMSD:      RMSD (root mean square deviation) of the alignment
+TMscore:   TMscore of the alignment
+MAXSUB:    Maxsub score of the alignment
+GDT_TS:    GDT_TS score, using d<1, d<2, d<4 and d<8
+GDT_HA:    GDT_HA score, using d<0.5, d<1, d<2 and d<4
+SeqID:     the number of dentical amino acid matches in the alignment
+
+
+The rigid-body transformations used to superpose the first 
+input structure onto the second structure
+                                              Comments
+ -0.153496  0.305058 -0.939882    19.583190   First three columns for the 
+  0.259100  0.930300  0.259633   -99.938795   rotation matrix and the last
+  0.953575 -0.203671 -0.221838    -7.968462   for the translation.        
+
+
+That is, the transformed position (x',y',z') is derived from the 
+original position (x,y,z) as follows.
+   /x'\     /-0.095020  0.506220 -0.857153\ /x\   / 7.649\
+   |y'|  =  | 0.459869 -0.741344 -0.488804|*|y| + |39.401|
+   \z'/     \-0.882888 -0.440625 -0.162353/ \z/   \43.390/
+
