@@ -23,7 +23,7 @@ using namespace std;
 void Usage()
 {
 	//-------- header part -------//
-	cerr << "DeepSearch v1.05 (pThread version) \n\n";
+	cerr << "DeepSearch v1.135 (pThread version) [Feb-02-2015] \n\n";
 	cerr << "Search a protein database for a query protein structure. \n";
 	cerr << "-------------------------------------------------------- \n";
 	cerr << "Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n";

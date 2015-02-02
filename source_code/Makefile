@@ -2,7 +2,7 @@
 
 # make the subdir first
 CXX = g++
-FLAG = -O3
+FLAG = -O3 -static
 SHELL :=/bin/bash
 
 PDBToolDir = ./PDB_Tool_src

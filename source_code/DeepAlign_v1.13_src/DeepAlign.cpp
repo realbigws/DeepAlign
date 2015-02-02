@@ -2465,7 +2465,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.134 [Feb-02-2015] \n");
+	fprintf(stderr,"DeepAlign v1.135 [Feb-02-2015] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");

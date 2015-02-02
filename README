@@ -1,5 +1,5 @@
 -----------------------
-DeepAlign_Open (v1.134)
+DeepAlign_Open (v1.135)
 date: 2015.02.01
 -----------------------
 
@@ -25,6 +25,18 @@ ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM,
                  BOUND AND IMPLICATIONS TO HOMOLOGY MODELING.
                   Bioinformatics. 2011 Sep 15;27(18):2537-45
 ------------------------------------------------------------
+
+
+
+--------------------------
+Linux system and CPU type
+--------------------------
+DeepAlign_Open has been compiled and tested under the following Linux system,
+	Linux version 3.2.0-72-generic (buildd@toyol) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #107-Ubuntu SMP Thu Nov 6 14:24:01 UTC 2014
+
+with the following CPU type,
+	Intel(R) Xeon(R) CPU E5-4607 0 @ 2.20GHz
+
 
 
 ----------------------------------

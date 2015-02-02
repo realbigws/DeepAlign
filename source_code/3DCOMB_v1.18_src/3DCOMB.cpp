@@ -702,7 +702,7 @@ void Usage(void)
 	fprintf(stderr,"--------------------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"3DCOMB v1.18 \n\n");
+	fprintf(stderr,"3DCOMB v1.135 [Feb-02-2015] \n");
 	fprintf(stderr,"Sheng Wang, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM, \n");
 	fprintf(stderr,"                    BOUND AND IMPLICATIONS TO HOMOLOGY MODELING. \n");
