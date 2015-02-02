@@ -34,3 +34,17 @@ DeepAlign_Open v1.134 (2014_09_07)
 
 1) add nLen in screen display for the normalization length of TMscore, MAXSUB, GDT_TS, and GDT_HA 
 
+
+----------------------------------
+DeepAlign_Open v1.135 (2015_02_02)
+----------------------------------
+
+1) all executables are compiled under '-static' options.
+
+2) in the output coordinate file, the original pdb numbering was kept.
+
+
+
+
+
+
