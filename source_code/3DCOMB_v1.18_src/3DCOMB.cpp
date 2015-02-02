@@ -40,6 +40,11 @@ void getRootName(string &in,string &out,char slash)
 }
 */
 
+
+//-> [1] for output PDB in linear co-ordinate, otherwise not output
+int Out_PDB;          //-> output PDB
+
+
 //--- macros -----//
 int WS_OUTPUT_CA;
 int WS_OUTPUT_TYPE;
@@ -533,9 +538,8 @@ void WS_NEO_BLOMAPS(string &list,int totnum,string &outnam,string &outroot)
 			string f2,f3;
 			if(WS_OUTPUT_CA>=1)
 			{
-				f2=rel_outnam+".pdb";
 				f3=rel_outnam+".scp";
-				multi_out.BC_Output_All(f2,f3,WS_MOL_TMP,WS_AMI,WS_LEN,totnum,WS_MAXLEN,WS_ALI,WS_OUTPUT_CA);
+				multi_out.BC_Output_All(f3,WS_MOL_TMP,WS_AMI,WS_LEN,totnum,WS_MAXLEN,WS_ALI,WS_OUTPUT_CA);
 			}
 			//[2] output alignment
 			string f1=rel_outnam+".ali";
@@ -563,12 +567,33 @@ void WS_NEO_BLOMAPS(string &list,int totnum,string &outnam,string &outroot)
 				for(int i=0;i<totnum;i++)
 				{
 					char chain=Int_To_Dom(i);
-					mol_output.Output_PDB_III(fp,WS_LEN[i],WS_ORIN_TMP[i],chain,-1);
-					fprintf(fp,"%s\n",TER.c_str());
+					fprintf(fp,"MODEL        %3d                                                       \n",i+1);
+					mol_output.Output_PDB_III(fp,WS_LEN[i],WS_ORIN_TMP[i],'_',1);
+					fprintf(fp,"ENDMDL                                                                 \n");
 				}
 				fprintf(fp,"%s\n",END.c_str());
-				fclose(fp);
+				//--> output for linear chain
+				if(Out_PDB==1)
+				{
+					// output file
+					string f2_=rel_outnam+".pdb_linear";
+					FILE *fq=fopen(f2_.c_str(),"wb");
+					if(fq==0)
+					{
+						fprintf(stderr,"ERROR: file %s can't be opened. \n",f2_.c_str());
+					}
+					// output
+					for(int i=0;i<totnum;i++)
+					{
+						char chain=Int_To_Dom(i);
+						mol_output.Output_PDB_III(fq,WS_LEN[i],WS_ORIN_TMP[i],chain,-1);
+						fprintf(fq,"%s\n",TER.c_str());
+					}
+					fprintf(fq,"%s\n",END.c_str());
+					fclose(fq);
+				}
 			}
+			fclose(fp);
 			//[4] output rotmat
 			string f4=rel_outnam+".rmt";
 			fp=fopen(f4.c_str(),"wb");
@@ -702,6 +727,9 @@ void Usage(void)
 //---------- main -----------//
 int main(int argc,char **argv)
 {
+	Out_PDB=0;     //-> default, not output linear PDB
+
+	//---- macros -----//
 	WS_OUTPUT_CA=0;   //no script output
 	WS_REFINEMENT=0;  //no refinement
 	WS_OUTPUT_TYPE=1; //single solution
@@ -724,7 +752,7 @@ int main(int argc,char **argv)
 		//---- process argument ----//
 		extern char* optarg;
 		int c=0;
-		while((c=getopt(argc,argv,"i:o:d:p:m:s:r"))!=EOF)
+		while((c=getopt(argc,argv,"i:o:O:d:p:m:s:r"))!=EOF)
 		{
 			switch(c) 
 			{
@@ -734,6 +762,10 @@ int main(int argc,char **argv)
 					break;
 				case 'o':
 					output_name = optarg;
+					break;
+				case 'O':
+					//-> [1] for output PDB in linear co-ordinate, otherwise not output
+					Out_PDB = atoi(optarg);
 					break;
 				case 'd':
 					output_root = optarg;

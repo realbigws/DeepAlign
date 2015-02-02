@@ -22,6 +22,10 @@ Mol_Load mol_input2;  //-> for load second mol
 Mol_Out mol_out;
 Confo_Lett confo_lett;
 
+//-> [1] for output PDB in linear co-ordinate, otherwise not output
+int Out_PDB;          //-> output PDB
+
+
 
 //--------- FASTA I/O ------------//
 //FASTA
@@ -1616,11 +1620,35 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 				{
 					WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
-					mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',-1);
-					fprintf(fp,"%s\n",TER.c_str());
-					mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',-1);
-					fprintf(fp,"%s\n",TER.c_str());
+					int numb=1;
+					fprintf(fp,"MODEL        %3d                                                       \n",numb);
+					mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'_',1);
+					fprintf(fp,"ENDMDL                                                                 \n");
+					numb++;
+					fprintf(fp,"MODEL        %3d                                                       \n",numb);
+					mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'_',1);
+					fprintf(fp,"ENDMDL                                                                 \n");
 					fprintf(fp,"%s\n",END.c_str());
+					//--> output for linear chain 
+					if(Out_PDB==1)
+					{
+						// output file
+						if(Out_More>=2)sprintf(www_nam,"%s/%s.%c.pdb_linear",output_root.c_str(),name.c_str(),wsk+'0');
+						else sprintf(www_nam,"%s/%s.pdb_linear",output_root.c_str(),name.c_str());
+						FILE *fq=fopen(www_nam,"wb");
+						if(fq==0)
+						{
+							fprintf(stderr,"ERROR: file %s can't be opened. \n",www_nam);
+						}
+						// output
+						mol_out.Output_PDB_III(fq,TM_MOLN1,TM_PDB_TMP,'A',-1);
+						fprintf(fq,"%s\n",TER.c_str());
+						mol_out.Output_PDB_III(fq,TM_MOLN2,TM_PDB2,'B',-1);
+						fprintf(fq,"%s\n",TER.c_str());
+						fprintf(fq,"%s\n",END.c_str());
+						// close
+						fclose(fq);
+					}
 				}
 				else                //-> output CA_Only PDB
 				{
@@ -1784,11 +1812,35 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 					if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 					{
 						WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
-						mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',-1);
-						fprintf(fp,"%s\n",TER.c_str());
-						mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',-1);
-						fprintf(fp,"%s\n",TER.c_str());
+						int numb=1;
+						fprintf(fp,"MODEL        %3d                                                       \n",numb);
+						mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'_',1);
+						fprintf(fp,"ENDMDL                                                                 \n");
+						numb++;
+						fprintf(fp,"MODEL        %3d                                                       \n",numb);
+						mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'_',1);
+						fprintf(fp,"ENDMDL                                                                 \n");
 						fprintf(fp,"%s\n",END.c_str());
+						//--> output for linear chain
+						if(Out_PDB==1)
+						{
+							// output file
+							if(Out_More>=2)sprintf(www_nam,"%s/%s.%c.pdb_linear",output_root.c_str(),name.c_str(),wsk+'0');
+							else sprintf(www_nam,"%s/%s.pdb_linear",output_root.c_str(),name.c_str());
+							FILE *fq=fopen(www_nam,"wb");
+							if(fq==0)
+							{
+								fprintf(stderr,"ERROR: file %s can't be opened. \n",www_nam);
+							}
+							// output
+							mol_out.Output_PDB_III(fq,TM_MOLN1,TM_PDB_TMP,'A',-1);
+							fprintf(fq,"%s\n",TER.c_str());
+							mol_out.Output_PDB_III(fq,TM_MOLN2,TM_PDB2,'B',-1);
+							fprintf(fq,"%s\n",TER.c_str());
+							fprintf(fq,"%s\n",END.c_str());
+							// close
+							fclose(fq);
+						}
 					}
 					else                //-> output CA_Only PDB
 					{
@@ -2413,7 +2465,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.133 [Jun-30-2014] \n");
+	fprintf(stderr,"DeepAlign v1.134 [Feb-02-2015] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
@@ -2467,6 +2519,7 @@ int Check_Argument(int argc,char **argv)
 //============== main ===============//
 int main(int argc,char **argv)
 {
+	Out_PDB=0;     //-> default, not output linear PDB
 	//---- argument check ----//
 	int NEWorOLD=0;
 	{
@@ -2534,7 +2587,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:p:P:n:k:s:u:l:j:d:w:v"))!=EOF)
+			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:v"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2598,6 +2651,10 @@ int main(int argc,char **argv)
 					case 'o':
 						out = optarg;
 						break;
+					case 'O':
+						//-> [1] for output PDB in linear co-ordinate, otherwise not output
+						Out_PDB = atoi(optarg);  
+						break;
 						
 					//---- options ----//
 					case 'p':
@@ -2649,7 +2706,7 @@ int main(int argc,char **argv)
 			job_style_pair=1;
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"e:a:x:y:o:p:P:n:k:s:u:l:j:"))!=EOF)
+			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2670,6 +2727,10 @@ int main(int argc,char **argv)
 						break;
 					case 'o':
 						out = optarg;
+						break;
+					case 'O':
+						//-> [1] for output PDB in linear co-ordinate, otherwise not output
+						Out_PDB = atoi(optarg);
 						break;
 						
 					//---- options ----//

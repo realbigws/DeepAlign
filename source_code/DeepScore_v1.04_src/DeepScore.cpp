@@ -12,9 +12,14 @@
 #include "Confo_Beta.h"
 #include "Mol_Load.h"
 #include "Mol_Out.h"
+using namespace std;
+
 Mol_Load mol_input;
 Mol_Out mol_out;
-using namespace std;
+
+//-> [1] for output PDB in linear co-ordinate, otherwise not output
+int Out_PDB;          //-> output PDB
+
 
 
 //--------- FASTA I/O ------------//
@@ -1715,6 +1720,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	XYZ *TM_MCB1;
 	XYZ *TM_MCB2;
 	PDB_Residue *TM_PDB1;
+	PDB_Residue *TM_PDB_TMP;
 	PDB_Residue *TM_PDB2;
 	char *TM_AMI1;
 	char *TM_AMI2;
@@ -1745,6 +1751,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	TM_MOL1=new XYZ[TM_MOLN1];
 	TM_MCB1=new XYZ[TM_MOLN1];
 	TM_PDB1=new PDB_Residue[TM_MOLN1];
+	TM_PDB_TMP=new PDB_Residue[TM_MOLN1];
 	TM_AMI1=new char[TM_MOLN1+1];
 	TM_CLE1=new char[TM_MOLN1+1];
 	TM_MOL2=new XYZ[TM_MOLN2];
@@ -1933,12 +1940,35 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		{
 			if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 			{
-				WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB1,TM_ROTMAT);
-				mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB1,'A',-1);
-				fprintf(fp,"%s\n",TER.c_str());
-				mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',-1);
-				fprintf(fp,"%s\n",TER.c_str());
+				WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
+				int numb=1;
+				fprintf(fp,"MODEL        %3d                                                       \n",numb);
+				mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'_',1);
+				fprintf(fp,"ENDMDL                                                                 \n");
+				numb++;
+				fprintf(fp,"MODEL        %3d                                                       \n",numb);
+				mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'_',1);
+				fprintf(fp,"ENDMDL                                                                 \n");
 				fprintf(fp,"%s\n",END.c_str());
+				//--> output for linear chain
+				if(Out_PDB==1)
+				{
+					// output file
+					sprintf(www_nam,"%s.pdb_linear",outnam.c_str());
+					FILE *fq=fopen(www_nam,"wb");
+					if(fq==0)
+					{
+						fprintf(stderr,"ERROR: file %s can't be opened. \n",www_nam);
+					}
+					// output
+					mol_out.Output_PDB_III(fq,TM_MOLN1,TM_PDB_TMP,'A',-1);
+					fprintf(fq,"%s\n",TER.c_str());
+					mol_out.Output_PDB_III(fq,TM_MOLN2,TM_PDB2,'B',-1);
+					fprintf(fq,"%s\n",TER.c_str());
+					fprintf(fq,"%s\n",END.c_str());
+					// close
+					fclose(fq);
+				}
 			}
 			else                //-> output CA_Only PDB
 			{
@@ -2113,6 +2143,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	delete [] TM_MOL1;
 	delete [] TM_MCB1;
 	delete [] TM_PDB1;
+	delete [] TM_PDB_TMP;
 	delete [] TM_AMI1;
 	delete [] TM_CLE1;
 	delete [] TM_MOL2;
@@ -2240,6 +2271,7 @@ int Check_Argument(int argc,char **argv)
 //============== main ===============//
 int main(int argc,char **argv)
 {
+	Out_PDB=0;     //-> default, not output linear PDB
 	//---- argument check ----//
 	int NEWorOLD=0;
 	{
@@ -2280,7 +2312,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"t:q:o:d:s:a:x:y:P:n:"))!=EOF)
+			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2293,6 +2325,9 @@ int main(int argc,char **argv)
 						break;
 					case 'o':
 						out_file = optarg;
+						break;
+					case 'O':
+						Out_PDB = atoi(optarg);
 						break;
 					case 'd':
 						detail_file = optarg;

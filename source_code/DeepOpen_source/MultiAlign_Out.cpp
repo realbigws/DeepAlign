@@ -259,7 +259,7 @@ void MultiAlign_Out::BC_Output_Superimpose(FILE *fp,XYZ **in,char **ami,int *len
 	}
 	fprintf(fp,"%s\n",END.c_str());  
 }
-void MultiAlign_Out::BC_Output_RasMol_Script(FILE *fws,string &name,
+void MultiAlign_Out::BC_Output_RasMol_Script(FILE *fws,
 	int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block)
 {
 	int j,k;
@@ -267,7 +267,6 @@ void MultiAlign_Out::BC_Output_RasMol_Script(FILE *fws,string &name,
 	int totnum;
 	int winlen;
 
-//	fprintf(fws,"load %s\n",name.c_str());
 	fprintf(fws,"wireframe off\n");
 	fprintf(fws,"backbone 10\n");
 	fprintf(fws,"set ambient 20\n");
@@ -308,7 +307,7 @@ void MultiAlign_Out::BC_Output_RasMol_Script(FILE *fws,string &name,
 	fprintf(fws,"select all\n");
 	fprintf(fws,"color chain\n");
 }
-void MultiAlign_Out::BC_Output_JMol_Script(FILE *fws,string &name,
+void MultiAlign_Out::BC_Output_JMol_Script(FILE *fws,
 	int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block)
 {
 	int j,k;
@@ -316,7 +315,6 @@ void MultiAlign_Out::BC_Output_JMol_Script(FILE *fws,string &name,
 	int totnum;
 	int winlen;
 
-//      fprintf(fws,"load %s\n",name.c_str());
 	fprintf(fws,"rotate x, 180\n");
 	fprintf(fws,"backbone only\n");
 	fprintf(fws,"backbone 10\n");
@@ -365,12 +363,11 @@ void MultiAlign_Out::BC_Output_JMol_Script(FILE *fws,string &name,
 // totnum -> total input structures number
 // maxlen -> MSA(Multiple-Structure-Alignment) total length
 // ali -> MSA itself (in 0,1,2 style, where '0':gap, '1':unaligned, '2': aligned)
-void MultiAlign_Out::BC_Output_All(string &f2,string &f3,XYZ **mol,char **ami,int *len,int totnum,int maxlen,int **ali,int TYPE)
+void MultiAlign_Out::BC_Output_All(string &f3,XYZ **mol,char **ami,int *len,int totnum,int maxlen,int **ali,int TYPE)
 {
 	FILE *fp;
 	//[rasmol]
 	BC_Ali_To_AFB(ali,maxlen,totnum,Multi_AFB,Multi_AFB_Record,Real_Block);
-	string name=f2;
 	fp=fopen(f3.c_str(),"wb");
 	if(fp==0)
 	{
@@ -380,11 +377,11 @@ void MultiAlign_Out::BC_Output_All(string &f2,string &f3,XYZ **mol,char **ami,in
 	{
 		if(TYPE==1) //output JMol
 		{
-			BC_Output_JMol_Script(fp,name,totnum,Multi_AFB,Multi_AFB_Record,Real_Block);
+			BC_Output_JMol_Script(fp,totnum,Multi_AFB,Multi_AFB_Record,Real_Block);
 		}
 		else        //output RasMol
-			{
-			BC_Output_RasMol_Script(fp,name,totnum,Multi_AFB,Multi_AFB_Record,Real_Block);
+		{
+			BC_Output_RasMol_Script(fp,totnum,Multi_AFB,Multi_AFB_Record,Real_Block);
 		}
 		fclose(fp);
 	}

@@ -33,10 +33,9 @@ public:
 	//output
 	void BC_Output_Alignment(FILE *fp,char **in,int totnum,int totlen,int **ali);
 	void BC_Output_Superimpose(FILE *fp,XYZ **in,char **ami,int *len,int totnum);
-	void BC_Output_RasMol_Script(FILE *fws,string &name,int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block);
-	void BC_Output_JMol_Script(FILE *fws,string &name,int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block);
+	void BC_Output_RasMol_Script(FILE *fws,int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block);
+	void BC_Output_JMol_Script(FILE *fws,int TOT_NUM,int ***Multi_AFB,int *Multi_AFB_Record,int *Real_Block);
 	//main
-	//[f2 -> superposed structure filename]
 	//[f3 -> superposed structure rasmol]  -> TYPE=1 for JMol, TYPE=0 for RasMol
-	void BC_Output_All(string &f2,string &f3,XYZ **mol,char **ami,int *len,int totnum,int maxlen,int **ali,int TYPE=1);
+	void BC_Output_All(string &f3,XYZ **mol,char **ami,int *len,int totnum,int maxlen,int **ali,int TYPE=1);
 };
