@@ -34,7 +34,7 @@ Enclosed in this package please find an example PDB database in databases/CAL_PD
 reference_pdb_list contains all the proteins in this folder. Please do not delete or change
 CAL_PDB and reference_pdb_list.
 
-Users can download some protein structure databses from http://raptorx.uchicago.edu/download/
+Users can download some protein structure databases from http://raptorx.uchicago.edu/download/
 
 ------
 
@@ -159,7 +159,7 @@ symbol explanation:
 '-' to indicate a certain beginning till the end.
 '+' to indicate a certain beginning followed by the length range.
 '@' to indicate the beginning or the ending of a certain chain.
-',' to seperate between two PDB chains.
+',' to separate between two PDB chains.
 '!' to select all chains in the structure.
 '_' to use the first chain in the structure.
 
