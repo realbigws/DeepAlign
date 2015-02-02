@@ -28,6 +28,13 @@ ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM,
 
 
 
+---------------------
+DeepAlign Web Server
+---------------------
+The Web Server could be located at http://raptorx.uchicago.edu/DeepAlign/submit/
+
+
+
 --------------------------
 Linux system and CPU type
 --------------------------
