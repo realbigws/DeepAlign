@@ -285,6 +285,7 @@ int Mol_Out::Output_PDB_III(FILE *fp,int len,PDB_Residue *mol,char Chain_ID,
 			//real_output//__110430__//
 			if(OutLast==1) //-> at column 77, output 'ATOM_NAME' just as column 13
 			{
+				output[72]=cur_chain;
 				output[77]=output[13];
 			}
 			fprintf(fp,"%s",output);
@@ -338,6 +339,7 @@ int Mol_Out::Output_PDB_III(FILE *fp,int len,PDB_Residue *mol,char Chain_ID,
 			//real_output//__110430__//
 			if(OutLast==1) //-> at column 77, output 'ATOM_NAME' just as column 13
 			{
+				output[72]=cur_chain;
 				output[77]=output[13];
 			}
 			fprintf(fp,"%s",output);
@@ -452,6 +454,7 @@ int Mol_Out::Output_PDB_III(FILE *fp,int len,vector <PDB_Residue> &mol,char Chai
 			//real_output//__110430__//
 			if(OutLast==1) //-> at column 77, output 'ATOM_NAME' just as column 13
 			{
+				output[72]=cur_chain;
 				output[77]=output[13];
 			}
 			fprintf(fp,"%s",output);
@@ -505,6 +508,7 @@ int Mol_Out::Output_PDB_III(FILE *fp,int len,vector <PDB_Residue> &mol,char Chai
 			//real_output//__110430__//
 			if(OutLast==1) //-> at column 77, output 'ATOM_NAME' just as column 13
 			{
+				output[72]=cur_chain;
 				output[77]=output[13];
 			}
 			fprintf(fp,"%s",output);

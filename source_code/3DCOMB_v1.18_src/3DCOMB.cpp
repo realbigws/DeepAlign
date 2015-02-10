@@ -567,9 +567,8 @@ void WS_NEO_BLOMAPS(string &list,int totnum,string &outnam,string &outroot)
 				for(int i=0;i<totnum;i++)
 				{
 					char chain=Int_To_Dom(i);
-					fprintf(fp,"MODEL        %3d                                                       \n",i+1);
-					mol_output.Output_PDB_III(fp,WS_LEN[i],WS_ORIN_TMP[i],'_',1);
-					fprintf(fp,"ENDMDL                                                                 \n");
+					mol_output.Output_PDB_III(fp,WS_LEN[i],WS_ORIN_TMP[i],chain,1);
+					fprintf(fp,"%s\n",TER.c_str());
 				}
 				fprintf(fp,"%s\n",END.c_str());
 				//--> output for linear chain
@@ -702,7 +701,7 @@ void Usage(void)
 	fprintf(stderr,"--------------------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"3DCOMB v1.135 [Feb-02-2015] \n");
+	fprintf(stderr,"3DCOMB v1.18 \n\n");
 	fprintf(stderr,"Sheng Wang, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM, \n");
 	fprintf(stderr,"                    BOUND AND IMPLICATIONS TO HOMOLOGY MODELING. \n");

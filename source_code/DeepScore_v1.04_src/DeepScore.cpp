@@ -1941,14 +1941,10 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 			if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 			{
 				WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
-				int numb=1;
-				fprintf(fp,"MODEL        %3d                                                       \n",numb);
-				mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'_',1);
-				fprintf(fp,"ENDMDL                                                                 \n");
-				numb++;
-				fprintf(fp,"MODEL        %3d                                                       \n",numb);
-				mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'_',1);
-				fprintf(fp,"ENDMDL                                                                 \n");
+				mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',1);
+				fprintf(fp,"%s\n",TER.c_str());
+				mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',1);
+				fprintf(fp,"%s\n",TER.c_str());
 				fprintf(fp,"%s\n",END.c_str());
 				//--> output for linear chain
 				if(Out_PDB==1)
@@ -2214,7 +2210,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.135 [Feb-02-2015] \n");
+	fprintf(stderr,"DeepScore v1.05 [May-30-2014] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
