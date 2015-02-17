@@ -45,6 +45,14 @@ DeepAlign_Open v1.135 (2015_02_02)
 
 
 
+---------------------------
+PDB_Tool v4.71 (2015_02_20)
+---------------------------
 
+1) -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat
+   these output files could be combined
+
+2) when -F is assigned, -R is automatically assigned. 
+   This is due to the fact that without reconstructing missing CB and backbone, -F will failed in SSE and ACC calculation.
 
 
