@@ -48,7 +48,8 @@ void print_help_msg(void)
 	cout << "The following arguments for both input types            |" << endl;
 	cout << "        -C 1 to consider non-CA atoms                   |" << endl;
 	cout << "        -R 1 to reconstruct missing CB and backbone     |" << endl;
-	cout << "        -F 1 to output AMI,CLE,SSE, and ACC file        |" << endl;
+	cout << "        -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat     |" << endl;
+	cout << "           these output files could be combined         |" << endl;
 	cout << "The following arguments only for <-L list> input type   |" << endl;
 	cout << "        -G 1 to output three log files                  |" << endl;
 	cout << "========================================================|" << endl;
@@ -186,10 +187,10 @@ int Get_PDB_File_Len(string &pdbfile) //-> only suitable for pdb_BC100 pdb_file
 	return count;
 }
 
-//------ output protein feature files -------//
-void Output_Protein_Features(
-	string &outroot,string &outname,Acc_Surface &acc_surface,
-	int moln,PDB_Residue *pdb,XYZ **mcc,int *mcc_side,char *ami,char *acc)
+//------ output protein feature files -------//2015_02_20//
+//--> output AMI_SSE_CLE
+void Output_Protein_Features_AMI_SSE_CLE(
+	string &outroot,string &outname,int moln,PDB_Residue *pdb)
 {
 	//init
 	int i;
@@ -205,7 +206,6 @@ void Output_Protein_Features(
 	{
 		fprintf(stderr,"[%s]CLE_BAD!!!\n",outname.c_str());
 		exit(-1);
-		
 	}
 	retv=chain_fold.calculate_SSE();
 	if(retv!=0)
@@ -260,6 +260,20 @@ void Output_Protein_Features(
 		fprintf(fpp,"%s\n",SSE.c_str());
 		fclose(fpp);
 	}
+}
+
+//--> output ACC and ACC_Value
+void Output_Protein_Features_ACC(
+	string &outroot,string &outname,Acc_Surface &acc_surface,
+	int moln,PDB_Residue *pdb,XYZ **mcc,int *mcc_side,char *ami,char *acc)
+{
+	//init
+	int i;
+	FILE *fpp;
+	string file;
+	PDB_Chain_Fold chain_fold;
+	chain_fold.initialize_simple(moln,' ');
+	for(i=0;i<moln;i++)chain_fold.set_residue(i,pdb[i]);
 	//------ output ACC_Code and ACC_Value ------//
 	for(i=0;i<moln;i++)pdb[i].get_XYZ_array(mcc[i],mcc_side[i]);
 	acc_surface.AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
@@ -291,6 +305,170 @@ void Output_Protein_Features(
 		fclose(fpp);
 	}
 }
+
+//------ output protein feature in one file -------//2015_02_20//
+// file format should be consistent with TPL file
+/*
+//////////// Features
+  Num Res  Missing   SS    Core   ACC   pACC  CNa CNb   Xca       Yca       Zca       Xcb       Ycb       Zcb
+   1   E      0       L      1     2     87   2   1     19.400     4.600    31.600    17.889     4.542    31.872
+   2   N      0       E      5     2     48   4   3     20.500     7.600    33.700    21.326     8.630    32.887
+   3   I      0       E      5     1     18   3   5     18.900     9.100    36.800    18.496     8.208    37.931
+   4   E      0       E      5     2     53   3   2     19.900    12.700    37.700    19.630    13.781    36.734
+   5   V      0       E      5     0      0   6   9     20.200    13.600    41.400    20.814    12.502    42.276
+   6   H      0       E      5     1     32   6   3     20.700    17.200    42.800    19.590    18.263    42.565
+   7   M      0       E      5     0      0   9   8     22.700    17.900    45.900    24.187    17.551    45.967
+   8   L      0       E      5     1     12   5   4     21.100    20.900    47.700    19.558    20.886    47.424
+   9   N      0       E      5     1     33   4   3     21.400    23.000    50.900    22.004    24.410    50.855
+*/
+//-------- SS8<->SS3 --------//
+char SS8_To_SS3(char c)
+{
+	switch(c)
+	{
+		case 'H': return 'H';
+		case 'G': return 'H';
+		case 'I': return 'H';
+		case 'E': return 'E';
+		case 'B': return 'E';
+		case 'T': return 'L';
+		case 'S': return 'L';
+		case 'L': return 'L';
+		default: return 'L';
+	}
+}
+//-------- ACC<->Int -------//
+int ACC_To_Int(char c)
+{
+	switch(c)
+	{
+		case 'B': return 0;
+		case 'M': return 1;
+		case 'E': return 2;
+		default: return 1;
+	}
+}
+//----- output protein features -----//
+void Output_Protein_Features(
+	string &outroot,string &outname,Acc_Surface &acc_surface,XYZ *mol,XYZ *mcb,
+	int moln,PDB_Residue *pdb,XYZ **mcc,int *mcc_side,char *ami,char *acc)
+{
+	//init
+	int i,j;
+	int retv;
+	PDB_Chain_Fold chain_fold;
+	chain_fold.initialize_simple(moln,' ');
+	for(i=0;i<moln;i++)chain_fold.set_residue(i,pdb[i]);
+
+	//------ calculate AMI,CLE,SSE ------//
+	retv=chain_fold.calculate_CLE();
+	if(retv!=0)
+	{
+		fprintf(stderr,"[%s]CLE_BAD!!!\n",outname.c_str());
+		exit(-1);
+	}
+	retv=chain_fold.calculate_SSE();
+	if(retv!=0)
+	{
+		fprintf(stderr,"[%s]SSE_BAD!!!\n",outname.c_str());
+		exit(-1);
+	}
+	string AMI,CLE,SSE;
+	AMI=chain_fold.get_sequence();
+	CLE=chain_fold.get_CLE();
+	SSE=chain_fold.get_SSE();
+
+	//------ calculate ACC_Code and ACC_Value ------//
+	for(i=0;i<moln;i++)pdb[i].get_XYZ_array(mcc[i],mcc_side[i]);
+	acc_surface.AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
+
+	//------ calculate contact number for CA and CB ---//
+	double DIST_CUTOFF = 49;
+	vector <int> cn_ca(moln,0);
+	vector <int> cn_cb(moln,0);
+	for(i=0;i<moln;i++)
+	{
+		for(j=0;j<moln;j++)
+		{
+			double dist_ca=mol[i].distance_square(mol[j]);
+			double dist_cb=mcb[i].distance_square(mcb[j]);
+			//-> normal condition
+			if( abs(i-j)>=4 )
+			{
+				if(dist_ca <= DIST_CUTOFF)cn_ca[i]++;
+				if(dist_cb <= DIST_CUTOFF)cn_cb[i]++;
+			}
+			//-> chain broken
+			else if( abs(i-j)>=1 )
+			{
+				//check PDB_residue
+				string str1,str2;
+				pdb[i].get_PDB_residue_number(str1);
+				pdb[j].get_PDB_residue_number(str2);
+				str1=str1.substr(1,4);
+				str2=str2.substr(1,4);
+				int pos1=atoi(str1.c_str());
+				int pos2=atoi(str2.c_str());
+				if( abs(pos1-pos2)>=4 )
+				{
+					if(dist_ca <= DIST_CUTOFF)cn_ca[i]++;
+					if(dist_cb <= DIST_CUTOFF)cn_cb[i]++;
+				}
+			}
+		}
+	}
+
+	//------ calculate core region ------//
+	string ss3="";
+	for(i=0;i<moln;i++)
+	{
+		char c=SS8_To_SS3(SSE[i]);
+		ss3.push_back(c);
+	}
+	int MinHelixLen = 4;
+	int MinBetaLen = 3;
+	int MinContact = 1;
+	vector <int> Core(moln,1);
+	for(i=0;i<moln;i++)
+	{
+		//calculate core
+		Core[i] = 1;
+		if(ss3[i]!='H' && ss3[i]!='E') continue;
+		Core[i] = 2;
+		int sslen = 1;
+		for(j=i-1;j>0;j--)
+		{
+			if(ss3[j]!=ss3[i]) break;
+			sslen++;
+		}
+		for(j=i+1;j<moln;j++)
+		{
+			if(ss3[j]!=ss3[i]) break;
+			sslen++;
+		}
+		if(ss3[i]=='H' && sslen >= MinHelixLen && cn_ca[i]>MinContact)Core[i] = 5;
+		if(ss3[i]=='E' && sslen >= MinBetaLen  && cn_ca[i]>MinContact)Core[i] = 5;
+	}
+
+	//------ output feature files -------//
+	string file=outroot+"/"+outname+".feature";
+	FILE *fpp=fopen(file.c_str(),"wb");
+	if(fpp==0)
+	{
+		fprintf(stderr,"ERROR: file %s can't be opened. \n",file.c_str());
+	}
+	else
+	{
+		for(i=0;i<moln;i++)
+		{
+			char c=ACC_To_Int(acc[i]);
+			fprintf(fpp,"%4d   %c      0       %c      %1d     %1d    %3d  %2d  %2d   %8.3f  %8.3f  %8.3f  %8.3f  %8.3f  %8.3f\n",
+				i+1,AMI[i],SSE[i],Core[i],c,acc_surface.AC_normal[i],cn_ca[i],cn_cb[i],mol[i].X,mol[i].Y,mol[i].Z,mcb[i].X,mcb[i].Y,mcb[i].Z);
+		}
+	}
+	fclose(fpp);
+}
+
 
 //==================== WS_PDB_Back_Process ===============// (process list)
 //[list_style]
@@ -557,10 +735,12 @@ int WS_PDB_Back_Process(string &list,int OutType,int OutMode,int OutGlys,int Out
 				}
 			}
 
+			//get CB
+			for(i=0;i<moln;i++)pdb[i].get_sidechain_atom( "CB ",mcb[i] );
+
 			//output
 			FILE *fpdb;
-			file="";
-			file=file+outa+"/"+output+".pdb";
+			file=outa+"/"+output+".pdb";
 			fpdb=fopen(file.c_str(),"wb");
 			if(fpdb==0)
 			{
@@ -573,9 +753,14 @@ int WS_PDB_Back_Process(string &list,int OutType,int OutMode,int OutGlys,int Out
 			}
 
 			//output others
-			if(OutFifi==1)
+			if(OutFifi!=0)
 			{
-				Output_Protein_Features(outa,output,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
+				if(OutFifi==1 || OutFifi==3 || OutFifi==5 || OutFifi==7)
+					Output_Protein_Features_AMI_SSE_CLE(outa,output,moln,pdb);
+				if(OutFifi==2 || OutFifi==3 || OutFifi==6 || OutFifi==7)
+					Output_Protein_Features_ACC(outa,output,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
+				if(OutFifi==4 || OutFifi==5 || OutFifi==6 || OutFifi==7)
+					Output_Protein_Features(outa,output,acc_surface,mol,mcb,moln,pdb,mcc,mcc_side,ami,acc);
 			}
 		}
 
@@ -715,7 +900,6 @@ void WS_PDB_Back_Process_Single(string &input,string &range,string &output,
 					break;
 				}
 			}
-			confo_lett.btb_ori(0,0,0,moln,mol,cle);
 
 			//judge
 			if(correct!=1)
@@ -723,6 +907,7 @@ void WS_PDB_Back_Process_Single(string &input,string &range,string &output,
 				if(OutReco==1)
 				{
 					//[1]recon
+					confo_lett.btb_ori(0,0,0,moln,mol,cle);
 					confo_back.Recon_Back_WS_Main(mol,cle,moln,mbb);      //given CA, recon BackBone (N,CA,C,O,CB)
 					confo_beta.WS_Recon_Beta_21(mol,mcb,moln,ami,cle);    //given CA, recon CB
 					//[2]assign
@@ -758,6 +943,9 @@ void WS_PDB_Back_Process_Single(string &input,string &range,string &output,
 				}
 			}
 
+			//get CB
+			for(i=0;i<moln;i++) pdb[i].get_sidechain_atom( "CB ",mcb[i] );
+
 			//output
 			FILE *fpdb;
 			fpdb=fopen(output.c_str(),"wb");
@@ -772,14 +960,19 @@ void WS_PDB_Back_Process_Single(string &input,string &range,string &output,
 			}
 
 			//output others
-			if(OutFifi==1)
+			if(OutFifi!=0)
 			{
 				//-> get name and root
 				string outroot,outname;
 				getBaseName(output,outname,'/','.');
 				getRootName(output,outroot,'/');
 				//-> output files
-				Output_Protein_Features(outroot,outname,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
+				if(OutFifi==1 || OutFifi==3 || OutFifi==5 || OutFifi==7)
+					Output_Protein_Features_AMI_SSE_CLE(outroot,outname,moln,pdb);
+				if(OutFifi==2 || OutFifi==3 || OutFifi==6 || OutFifi==7)
+					Output_Protein_Features_ACC(outroot,outname,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
+				if(OutFifi==4 || OutFifi==5 || OutFifi==6 || OutFifi==7)
+					Output_Protein_Features(outroot,outname,acc_surface,mol,mcb,moln,pdb,mcc,mcc_side,ami,acc);
 			}
 		}
 	}
@@ -802,6 +995,9 @@ int main(int argc, char** argv)
 	//---- BackBone ----//(process list or single) PDB_Backbone//
 	{
 		process_args(argc,argv);
+		//-> if set with -F, then automatically set -R
+		if(INPUT_FIFI!=0)INPUT_RECO=1;
+		//-> list or single
 		if(LIST_OR_SINGLE>0)WS_PDB_Back_Process(INPUT_LIST,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
 		else WS_PDB_Back_Process_Single(INPUT_NAM,INPUT_RAN,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
 		exit(0);

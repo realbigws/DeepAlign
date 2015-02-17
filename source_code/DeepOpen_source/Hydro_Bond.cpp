@@ -643,7 +643,7 @@ void Hydro_Bond::HB_Calc_SSE(char *sse)
 	//[kappa/turn]
 	HB_Calc_SSE_Turn('S');
 	//final
-	for(i=0;i<HB_moln;i++)if(HB_sse[i]==' ')HB_sse[i]='C';
+	for(i=0;i<HB_moln;i++)if(HB_sse[i]==' ')HB_sse[i]='L';
 	strcpy(sse,HB_sse);
 }
 char Hydro_Bond::HB_Trans_SSE_Single(char c)
@@ -655,7 +655,7 @@ char Hydro_Bond::HB_Trans_SSE_Single(char c)
 		case 'I':return 'H'; //H
 		case 'E':return 'E'; //E
 		case 'B':return 'E'; //E
-		default:return 'C';
+		default:return 'L';
 	}
 }
 void Hydro_Bond::HB_Trans_SSE(char *in,char *out,int moln)
