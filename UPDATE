@@ -1,38 +1,13 @@
-----------------------------------
-DeepAlign_Open v1.132 (2014_06_28)
-----------------------------------
+---------------------------
+PDB_Tool v4.71 (2015_02_20)
+---------------------------
 
-1) range
-fix the range operation problem that, if the user assigned range is not correct, then DeepAlign will try to get the intersection of the current chain with the given range.
+1) -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat
+   these output files could be combined
 
-2) '9' rmsd
-the output assessment for '9' will be replaced with ' '
+2) when -F is assigned, -R is automatically assigned.
+   This is due to the fact that without reconstructing missing CB and backbone, -F will failed in SSE and ACC calculation.
 
-3) FILE *fp
-fix a bug when file pointer is NULL, then output an error with "ERROR: file %s can't be opened."
-
-
-
-----------------------------------
-DeepAlign_Open v1.133 (2014_06_29)
-----------------------------------
-
-1) eliminate frag
-move the Kill_Frag module from DeepAlign.cpp to CLEFAPS_Main.cpp, which will generate more meaningful result.
-
-2) new ranking order
-rank solutions according to tms*wms, after Kill_Gap and Kill_Frag. 
-
-3) consistent CB
-fix a bug of inconsistency between XYZ_Input generated CB and Simp_Load generated CB.
-
-
-
-----------------------------------
-DeepAlign_Open v1.134 (2014_09_07)
-----------------------------------
-
-1) add nLen in screen display for the normalization length of TMscore, MAXSUB, GDT_TS, and GDT_HA 
 
 
 ----------------------------------
@@ -45,14 +20,40 @@ DeepAlign_Open v1.135 (2015_02_02)
 
 
 
----------------------------
-PDB_Tool v4.71 (2015_02_20)
----------------------------
+----------------------------------
+DeepAlign_Open v1.134 (2014_09_07)
+----------------------------------
 
-1) -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat
-   these output files could be combined
+1) add nLen in screen display for the normalization length of TMscore, MAXSUB, GDT_TS, and GDT_HA
 
-2) when -F is assigned, -R is automatically assigned. 
-   This is due to the fact that without reconstructing missing CB and backbone, -F will failed in SSE and ACC calculation.
+
+
+----------------------------------
+DeepAlign_Open v1.133 (2014_06_29)
+----------------------------------
+
+1) eliminate frag
+move the Kill_Frag module from DeepAlign.cpp to CLEFAPS_Main.cpp, which will generate more meaningful result.
+
+2) new ranking order
+rank solutions according to tms*wms, after Kill_Gap and Kill_Frag.
+
+3) consistent CB
+fix a bug of inconsistency between XYZ_Input generated CB and Simp_Load generated CB.
+
+
+
+----------------------------------
+DeepAlign_Open v1.132 (2014_06_28)
+----------------------------------
+
+1) range
+fix the range operation problem that, if the user assigned range is not correct, then DeepAlign will try to get the intersection of the current chain with the given range.
+
+2) '9' rmsd
+the output assessment for '9' will be replaced with ' '
+
+3) FILE *fp
+fix a bug when file pointer is NULL, then output an error with "ERROR: file %s can't be opened."
 
 
