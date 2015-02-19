@@ -2,28 +2,33 @@
 
 # make the subdir first
 CXX = g++
-FLAG = -O3 -static
+FLAG = -O3 -static 
 SHELL :=/bin/bash
 
 PDBToolDir = ./PDB_Tool_src
+LIGToolDir = ./LIG_Tool_src
 DeepScoreDir = ./DeepScore_src
 DeepAlignDir = ./DeepAlign_src
-DCOMBDIR = ./3DCOMB_src
+3DCOMBDIR = ./3DCOMB_src
+
 PDBToolEXE = /PDB_Tool
+LIGToolEXE = /LIG_Tool
 DeepScoreEXE = /DeepScore
 DeepAlignEXE = /DeepAlign
-DCOMBEXE = /3DCOMB
+3DCOMBEXE = /3DCOMB
 UTILS = ./util_src/
 
 all:
 	cd $(PDBToolDir)&&make
 	mv ${PDBToolDir}$(PDBToolEXE) ../
+	cd $(LIGToolDir)&&make
+	mv ${LIGToolDir}$(LIGToolEXE) ../
 	cd $(DeepScoreDir)&&make
 	mv $(DeepScoreDir)$(DeepScoreEXE) ../
 	cd $(DeepAlignDir)&&make
 	mv $(DeepAlignDir)$(DeepAlignEXE) ../
-	cd $(DCOMBDIR)&&make
-	mv $(DCOMBDIR)$(DCOMBEXE) ../
+	cd $(3DCOMBDIR)&&make
+	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
 	
 	$(CXX) DeepSearch.cpp $(FLAG) -lpthread -o DeepSearch
 	mv DeepSearch ../
@@ -39,6 +44,10 @@ PDB_Tool:
 	cd $(PDBToolDir)&&make
 	mv ${PDBToolDir}$(PDBToolEXE) ../
 
+LIG_Tool:
+	cd $(LIGToolDir)&&make
+	mv ${LIGToolDir}$(LIGToolEXE) ../
+
 DeepScore:
 	cd $(DeepScoreDir)&&make
 	mv $(DeepScoreDir)$(DeepScoreEXE) ../
@@ -48,8 +57,8 @@ DeepAlign:
 	mv $(DeepAlignDir)$(DeepAlignEXE) ../
 
 3DCOMB:
-	cd $(DCOMBDIR)&&make
-	mv $(DCOMBDIR)$(DCOMBEXE) ../
+	cd $(3DCOMBDIR)&&make
+	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
 
 DeepSearch:
 	$(CXX) DeepSearch.cpp $(FLAG) -lpthread -o DeepSearch

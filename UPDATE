@@ -1,5 +1,19 @@
+
 ---------------------------
-PDB_Tool v4.71 (2015_02_20)
+LIG_Tool v1.01 (2015_02_19)
+---------------------------
+
+1) Make file could automatically download the latest ligand database from official PDB website (specifically, the file should be ftp://ftp.wwpdb.org/pub/pdb/data/monomers/components.cif
+
+2) The components.cif contains the CAMEO required information, such as ions(I), nucleotides(N), organics(O), protein ligands (P)
+
+3) Log file now could be turned on or off. By default, log file is turned off.
+
+
+
+
+---------------------------
+PDB_Tool v4.71 (2015_02_17)
 ---------------------------
 
 1) -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat

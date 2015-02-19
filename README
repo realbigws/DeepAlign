@@ -134,13 +134,16 @@ examples for programs
 1. Get a certain range in an official PDB, and save it to canonical form
 PDB_Tool -i 1col.pdb -r A -o 1colA.pdb 
 
-2. Run pairwise structure alignment for 1col.pdb and 1cpc.pdb
+2. Extract the chains and the ligands from an official PDB,
+LIG_Tool -i 1paz.pdb
+
+3. Run pairwise structure alignment for 1col.pdb and 1cpc.pdb
 DeepAlign 1col.pdb 1cpc.pdb
 
-3. Run multiple structure alignment for proteins in input_list
+4. Run multiple structure alignment for proteins in input_list
 3DCOMB -i input_list
 
-4. Run database search for 1pazA.pdb against bc40 template database
+5. Run database search for 1pazA.pdb against bc40 template database
 DeepSearch -a 8 -q 1pazA.pdb -d  databases/CAL_PDB/ -l databases/reference_pdb_list
 
 Two result files will be generated: 1pazA.rank and 1pazA.rank_simp, which contain detailed and summary results, respectively.
@@ -185,7 +188,7 @@ symbol explanation:
 '_' to use the first chain in the structure.
 
 
-range example                     description
+range example               description
 -------                     -----------
 A:21-179,B.45-@             Two segments from the input structure are selected.
                             For chain A we select from residue 21 to residue 179 according to PDB numbering, 
