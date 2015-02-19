@@ -4,20 +4,23 @@ make
 Part I. To compile PDB_Tool, type
 make PDB_Tool
 
-Part II. To compile DeepScore, type
+Part II: To compile LIG_Tool, type
+make LIG_Tool
+
+Part III. To compile DeepScore, type
 make DeepScore
 
-Part III. To compile DeepAlign, type
+Part IV. To compile DeepAlign, type
 make DeepAlign
 
-Part IV. To compile 3DCOMB, type
+Part V. To compile 3DCOMB, type
 make 3DCOMB
 
-Part V. To compile DeepSearch, type
+Part VI. To compile DeepSearch, type
 make DeepSearch
 You can also compile a MPI version of DeepSearch by change Makefile a little bit.
 
-Part VI. To compile util, type
+Part VII. To compile util, type
 make util
 
 The compiled executables will be put in the ../ directory.
