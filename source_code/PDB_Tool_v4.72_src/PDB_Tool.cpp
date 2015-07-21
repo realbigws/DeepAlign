@@ -14,7 +14,7 @@ using namespace std;
 void print_help_msg(void) 
 {
 	cout << "========================================================|" << endl;
-	cout << "PDB_Tool  (version 4.71) [2015.02.20]                   |" << endl;
+	cout << "PDB_Tool  (version 4.72) [2015.07.20]                   |" << endl;
 	cout << "          Transform original .PDB file to compact form  |" << endl;
 	cout << "Usage:   ./PDB_Tool <-i input> <-r range> <-o output>   |" << endl;
 	cout << "Or,      ./PDB_Tool <-L list>                           |" << endl;
@@ -48,7 +48,7 @@ void print_help_msg(void)
 	cout << "The following arguments for both input types            |" << endl;
 	cout << "        -C 1 to consider non-CA atoms                   |" << endl;
 	cout << "        -R 1 to reconstruct missing CB and backbone     |" << endl;
-	cout << "        -F 1 for AMI,CLE,SSE, 2 for ACC, 4 for feat     |" << endl;
+	cout << "        -F 1 for AMI,CLE,SSE; 2 for ACC; 4 for FEAT     |" << endl;
 	cout << "           these output files could be combined         |" << endl;
 	cout << "The following arguments only for <-L list> input type   |" << endl;
 	cout << "        -G 1 to output three log files                  |" << endl;
@@ -310,7 +310,7 @@ void Output_Protein_Features_ACC(
 // file format should be consistent with TPL file
 /*
 //////////// Features
-  Num Res  Missing   SS    Core   ACC   pACC  CNa CNb   Xca       Yca       Zca       Xcb       Ycb       Zcb
+  Num Res  Missing   SSE    CLE   ACC   pACC  CNa CNb   Xca       Yca       Zca       Xcb       Ycb       Zcb
    1   E      0       L      1     2     87   2   1     19.400     4.600    31.600    17.889     4.542    31.872
    2   N      0       E      5     2     48   4   3     20.500     7.600    33.700    21.326     8.630    32.887
    3   I      0       E      5     1     18   3   5     18.900     9.100    36.800    18.496     8.208    37.931
@@ -321,22 +321,6 @@ void Output_Protein_Features_ACC(
    8   L      0       E      5     1     12   5   4     21.100    20.900    47.700    19.558    20.886    47.424
    9   N      0       E      5     1     33   4   3     21.400    23.000    50.900    22.004    24.410    50.855
 */
-//-------- SS8<->SS3 --------//
-char SS8_To_SS3(char c)
-{
-	switch(c)
-	{
-		case 'H': return 'H';
-		case 'G': return 'H';
-		case 'I': return 'H';
-		case 'E': return 'E';
-		case 'B': return 'E';
-		case 'T': return 'L';
-		case 'S': return 'L';
-		case 'L': return 'L';
-		default: return 'L';
-	}
-}
 //-------- ACC<->Int -------//
 int ACC_To_Int(char c)
 {
@@ -418,13 +402,8 @@ void Output_Protein_Features(
 		}
 	}
 
+/*
 	//------ calculate core region ------//
-	string ss3="";
-	for(i=0;i<moln;i++)
-	{
-		char c=SS8_To_SS3(SSE[i]);
-		ss3.push_back(c);
-	}
 	int MinHelixLen = 4;
 	int MinBetaLen = 3;
 	int MinContact = 1;
@@ -433,22 +412,23 @@ void Output_Protein_Features(
 	{
 		//calculate core
 		Core[i] = 1;
-		if(ss3[i]!='H' && ss3[i]!='E') continue;
+		if(SSE[i]!='H' && SSE[i]!='E') continue;
 		Core[i] = 2;
 		int sslen = 1;
 		for(j=i-1;j>0;j--)
 		{
-			if(ss3[j]!=ss3[i]) break;
+			if(SSE[j]!=SSE[i]) break;
 			sslen++;
 		}
 		for(j=i+1;j<moln;j++)
 		{
-			if(ss3[j]!=ss3[i]) break;
+			if(SSE[j]!=SSE[i]) break;
 			sslen++;
 		}
-		if(ss3[i]=='H' && sslen >= MinHelixLen && cn_ca[i]>MinContact)Core[i] = 5;
-		if(ss3[i]=='E' && sslen >= MinBetaLen  && cn_ca[i]>MinContact)Core[i] = 5;
+		if(SSE[i]=='H' && sslen >= MinHelixLen && cn_ca[i]>MinContact)Core[i] = 5;
+		if(SSE[i]=='E' && sslen >= MinBetaLen  && cn_ca[i]>MinContact)Core[i] = 5;
 	}
+*/
 
 	//------ output feature files -------//
 	string file=outroot+"/"+outname+".feature";
@@ -459,11 +439,12 @@ void Output_Protein_Features(
 	}
 	else
 	{
+		fprintf(fpp,"  Num Res  Missing   SSE    CLE   ACC   pACC  CNa CNb   Xca       Yca       Zca       Xcb       Ycb       Zcb\n");
 		for(i=0;i<moln;i++)
 		{
 			char c=ACC_To_Int(acc[i]);
-			fprintf(fpp,"%4d   %c      0       %c      %1d     %1d    %3d  %2d  %2d   %8.3f  %8.3f  %8.3f  %8.3f  %8.3f  %8.3f\n",
-				i+1,AMI[i],SSE[i],Core[i],c,acc_surface.AC_normal[i],cn_ca[i],cn_cb[i],mol[i].X,mol[i].Y,mol[i].Z,mcb[i].X,mcb[i].Y,mcb[i].Z);
+			fprintf(fpp,"%4d   %c      0       %c      %c     %1d    %3d  %2d  %2d   %8.3f  %8.3f  %8.3f  %8.3f  %8.3f  %8.3f\n",
+				i+1,AMI[i],SSE[i],CLE[i],c,acc_surface.AC_normal[i],cn_ca[i],cn_cb[i],mol[i].X,mol[i].Y,mol[i].Z,mcb[i].X,mcb[i].Y,mcb[i].Z);
 		}
 	}
 	fclose(fpp);
