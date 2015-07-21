@@ -53,6 +53,9 @@ public:
 	void HB_Calc_SSE_Lone(char ori,char t,int limit);  //kill_single_helix
 	//[main]
 	void HB_Calc_SSE(char *sse);                       //calc_main
-	char HB_Trans_SSE_Single(char c);                  //8-digit to 3-digit single
-	void HB_Trans_SSE(char *in,char *out,int moln);    //8-digit to 3-digit //__100820__//
+	char HB_Trans_SSE_Single_A(char c);                //8-digit to 3-digit single, method A
+	char HB_Trans_SSE_Single_B(char c);                //8-digit to 3-digit single, method B
+	void HB_Trans_SSE(char *in,char *out,int moln,
+		int method=0);                             //8-digit to 3-digit //__100820__//
 };
+

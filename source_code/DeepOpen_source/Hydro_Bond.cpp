@@ -646,7 +646,21 @@ void Hydro_Bond::HB_Calc_SSE(char *sse)
 	for(i=0;i<HB_moln;i++)if(HB_sse[i]==' ')HB_sse[i]='L';
 	strcpy(sse,HB_sse);
 }
-char Hydro_Bond::HB_Trans_SSE_Single(char c)
+
+//------ transform from 8-digit SSE to 3-digit SSE ----------//
+/*
+Please refer to the following paper:
+
+"Evaluation and improvement of multiple sequence methods for protein secondary structure prediction"
+by James A. Cuff and Geoffrey J. Barton
+at 1999, on PROTEINS: Structure, Function, and Genetics 34:508-519
+
+Method A: E,B to E; G,H to H; rest to C
+Method B: E to E; H to H; rest to C
+
+The prediction results show that Method B could get better performance than Method A
+*/
+char Hydro_Bond::HB_Trans_SSE_Single_A(char c)
 {
 	switch(c)
 	{
@@ -655,11 +669,24 @@ char Hydro_Bond::HB_Trans_SSE_Single(char c)
 		case 'I':return 'H'; //H
 		case 'E':return 'E'; //E
 		case 'B':return 'E'; //E
-		default:return 'L';
+		default:return 'C';
 	}
 }
-void Hydro_Bond::HB_Trans_SSE(char *in,char *out,int moln)
+char Hydro_Bond::HB_Trans_SSE_Single_B(char c)
+{
+	switch(c)
+	{
+		case 'H':return 'H'; //H
+		case 'E':return 'E'; //E
+		default:return 'C';
+	}
+}
+
+//----------- HB_Trans_SSE ----------//
+void Hydro_Bond::HB_Trans_SSE(char *in,char *out,int moln,int method)
 {
 	int i;
-	for(i=0;i<moln;i++)out[i]=HB_Trans_SSE_Single(in[i]);
+	if(method==0)for(i=0;i<moln;i++)out[i]=HB_Trans_SSE_Single_A(in[i]);
+	else for(i=0;i<moln;i++)out[i]=HB_Trans_SSE_Single_B(in[i]);
 }
+
