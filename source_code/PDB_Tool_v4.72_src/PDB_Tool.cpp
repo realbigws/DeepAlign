@@ -367,7 +367,7 @@ void Output_Protein_Features(
 	acc_surface.AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
 
 	//------ calculate contact number for CA and CB ---//
-	double DIST_CUTOFF = 49;
+	double DIST_CUTOFF = 64; //-> 8.0A (note that in older version of TPL, the CA/CB contact cutoff is 7.0A
 	vector <int> cn_ca(moln,0);
 	vector <int> cn_cb(moln,0);
 	for(i=0;i<moln;i++)

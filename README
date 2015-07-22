@@ -30,6 +30,25 @@ http://www.ncbi.nlm.nih.gov/pubmed/21791532
 
 
 
+--------
+Install:
+--------
+
+1. download the package
+
+git clone https://github.com/realbigws/DeepAlign/
+cd DeepAlign/
+
+
+2. compile
+
+cd source_code/
+        make
+cd ../
+
+
+
+
 ---------------------
 DeepAlign Web Server
 ---------------------
@@ -85,14 +104,6 @@ cd databases/
 	tar xzf CAL_PDB.tar.gz
 cd ../
 
-
-
---------
-compile
---------
-cd source_code/
-	make
-cd ../
 
 
 
