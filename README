@@ -200,6 +200,7 @@ Specify residue range by -x or -y option:
 =========================================
 
 symbol explanation:
+-------------------
 
 ':' for PDB numbering, that the range is selected according to the residue number in the PDB file.
 '.' for SEQUENCE numbering, that the range is selected according to sequential order, starting from 1.
@@ -211,10 +212,15 @@ symbol explanation:
 '_' to use the first chain in the structure.
 
 
-range example               description
--------                     -----------
-A:21-179,B.45-@             Two segments from the input structure are selected.
-                            For chain A we select from residue 21 to residue 179 according to PDB numbering, 
-                            whereas for chain B we select from position 45 to the end in sequential order.
+example:
+--------
+A:21-179,B.45-@
+
+
+description:
+------------
+Two segments from the input structure are selected.
+For chain A we select from residue 21 to residue 179 according to PDB numbering,
+whereas for chain B we select from position 45 to the end in sequential order.
 
 __________________________________________________________
