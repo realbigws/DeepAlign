@@ -137,6 +137,7 @@ Misc programs:
 
 1. PDB process tool (convert official PDB to compact form. Reconstruct missing backbone and CB atom)
 PDB_Tool <-i input> <-r range> <-o output>
+For more details, please refer to https://github.com/realbigws/PDB_Tool
 
 2. Evaluate quality scores of a given pairwise protein alignment. (i.e., GDT, TMscore, MaxSub, and DeepScore)
 DeepScore protein_1 protein_2 <-a alignment> 
