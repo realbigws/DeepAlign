@@ -1,7 +1,7 @@
------------------------
+=======================
 DeepAlign_Open (v1.135)
 date: 2015.02.20
------------------------
+=======================
 
 Author: Sheng Wang , Jinbo Xu
 Contact email: realbigws@gmail.com , jinboxu@gmail.com
@@ -30,15 +30,16 @@ http://www.ncbi.nlm.nih.gov/pubmed/21791532
 
 
 
---------
+========
 Install:
---------
+========
 
 1. download the package
 
 git clone --recursive https://github.com/realbigws/DeepAlign/
 cd DeepAlign/
 
+--------------
 
 2. compile
 
@@ -49,16 +50,18 @@ cd ../
 
 
 
----------------------
-DeepAlign Web Server
----------------------
+=====================
+DeepAlign Web Server:
+=====================
+
 The Web Server could be located at http://raptorx.uchicago.edu/DeepAlign/submit/
 
 
 
---------------------------
-Linux system and CPU type
---------------------------
+==========================
+Linux system and CPU type:
+==========================
+
 DeepAlign_Open has been compiled and tested under the following Linux system,
 	Linux version 3.2.0-72-generic (buildd@toyol) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #107-Ubuntu SMP Thu Nov 6 14:24:01 UTC 2014
 
@@ -67,9 +70,10 @@ with the following CPU type,
 
 
 
-----------------------------------
-setup for structure homolog search
-----------------------------------
+===================================
+Setup for structure homolog search:
+===================================
+
 Enclosed in this package please find an example PDB database in databases/CAL_PDB .
 reference_pdb_list contains all the proteins in this folder. Please do not delete or change
 CAL_PDB and reference_pdb_list.
@@ -107,9 +111,10 @@ cd ../
 
 
 
--------------
-main programs
--------------
+==============
+Main programs:
+==============
+
 1. Pairwise structure alignment
 To run pairwise alignment, type the following command,
 DeepAlign protein_T protein_S
@@ -126,9 +131,10 @@ Usage information for all the programs are available by simply running these pro
 
 
 
--------------
-misc programs
--------------
+==============
+Misc programs:
+==============
+
 1. PDB process tool (convert official PDB to compact form. Reconstruct missing backbone and CB atom)
 PDB_Tool <-i input> <-r range> <-o output>
 
@@ -137,9 +143,10 @@ DeepScore protein_1 protein_2 <-a alignment>
 
 
 
----------------------
-examples for programs
----------------------
+=========
+Examples:
+=========
+
 0. The first three examples are located in examples/ directory
 
 1. Get a certain range in an official PDB, and save it to canonical form
@@ -161,9 +168,10 @@ Two result files will be generated: 1pazA.rank and 1pazA.rank_simp, which contai
 
 
 
-----------------------------
-simple screenout description
-----------------------------
+======================
+Screenout description:
+======================
+
 name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore ->  LALI RMSD TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen
 
 name1:     Name of the first protein
@@ -184,9 +192,12 @@ SeqID:     the number of identical amino acid matches in the alignment
 nLen:      Normalization length for TMscore, MAXSUB, GDT_TS, and GDT_HA
 
 
------------------------------------------
-specify residue range by -x or -y option
------------------------------------------
+
+
+=========================================
+Specify residue range by -x or -y option:
+=========================================
+
 symbol explanation:
 
 ':' for PDB numbering, that the range is selected according to the residue number in the PDB file.
@@ -205,7 +216,4 @@ A:21-179,B.45-@             Two segments from the input structure are selected.
                             For chain A we select from residue 21 to residue 179 according to PDB numbering, 
                             whereas for chain B we select from position 45 to the end in sequential order.
 
-
--------------------------------------
-Test examples: enclosed in this package please find some test examples
-____________________________________
+__________________________________________________________
