@@ -36,7 +36,7 @@ Install:
 
 1. download the package
 
-git clone https://github.com/realbigws/DeepAlign/
+git clone --recursive https://github.com/realbigws/DeepAlign/
 cd DeepAlign/
 
 
