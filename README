@@ -63,7 +63,8 @@ Linux system and CPU type:
 ==========================
 
 DeepAlign_Open has been compiled and tested under the following Linux system,
-	Linux version 3.2.0-72-generic (buildd@toyol) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) )
+	Linux version 3.2.0-72-generic (buildd@toyol) 
+	gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) 
 
 with the following CPU type,
 	Intel(R) Xeon(R) CPU E5-4607 0 @ 2.20GHz
@@ -132,11 +133,13 @@ Usage information for all the programs are available by simply running these pro
 Misc programs:
 ==============
 
-1. PDB process tool (convert official PDB to compact form. Reconstruct missing backbone and CB atom)
+1. PDB process tool.
+(convert official PDB to compact form. Reconstruct missing backbone and CB atom)
 	./PDB_Tool <-i input> <-r range> <-o output>
 For more details, please refer to https://github.com/realbigws/PDB_Tool
 
-2. Evaluate quality scores of a given pairwise protein alignment. (i.e., GDT, TMscore, MaxSub, and DeepScore)
+2. Evaluate quality scores of a given pairwise protein alignment. 
+(i.e., GDT, TMscore, MaxSub, and DeepScore)
 	./DeepScore protein_1 protein_2 <-a alignment> 
 
 
