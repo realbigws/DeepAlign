@@ -75,7 +75,7 @@ with the following CPU type,
 Setup for structure homolog search:
 ===================================
 
-Enclosed in this package please find an example PDB database in databases/CAL_PDB.tar.gz 
+In this package please find an example PDB database in databases/CAL_PDB.tar.gz
 reference_pdb_list contains all the proteins in this folder. 
 Please do not delete or change CAL_PDB and reference_pdb_list.
 
