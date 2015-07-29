@@ -18,26 +18,8 @@ DeepAlignEXE = /DeepAlign
 3DCOMBEXE = /3DCOMB
 UTILS = ./util_src/
 
-all:
-	cd $(PDBToolDir)&&make
-	mv ${PDBToolDir}$(PDBToolEXE) ../
-	cd $(LIGToolDir)&&make
-	mv ${LIGToolDir}$(LIGToolEXE) ../
-	cd $(DeepScoreDir)&&make
-	mv $(DeepScoreDir)$(DeepScoreEXE) ../
-	cd $(DeepAlignDir)&&make
-	mv $(DeepAlignDir)$(DeepAlignEXE) ../
-	cd $(3DCOMBDIR)&&make
-	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
-	
-	$(CXX) DeepSearch.cpp $(FLAG) -lpthread -o DeepSearch
-	mv DeepSearch ../
-	
-	$(CXX) $(UTILS)Stat_List.cpp $(FLAG) -o Stat_List
-	$(CXX) $(UTILS)Fitting_EVD.cpp $(FLAG) -o Fitting_EVD
-	$(CXX) $(UTILS)Domain_Proc.cpp $(FLAG) -o Domain_Proc
-	$(CXX) $(UTILS)PDB_File_Cut.cpp $(FLAG) -o PDB_File_Cut
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut ../util/
+
+all: PDB_Tool DeepScore DeepAlign 3DCOMB DeepSearch util
 
 
 PDB_Tool:
@@ -61,7 +43,7 @@ DeepAlign:
 	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
 
 DeepSearch:
-	$(CXX) DeepSearch.cpp $(FLAG) -lpthread -o DeepSearch
+	$(CXX) DeepSearch.cpp getopt.cpp $(FLAG) -lpthread -o DeepSearch
 	mv DeepSearch ../
 
 util:
@@ -69,6 +51,7 @@ util:
 	$(CXX) $(UTILS)Fitting_EVD.cpp $(FLAG) -o Fitting_EVD
 	$(CXX) $(UTILS)Domain_Proc.cpp $(FLAG) -o Domain_Proc
 	$(CXX) $(UTILS)PDB_File_Cut.cpp $(FLAG) -o PDB_File_Cut
+	mkdir -p ../util
 	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut ../util/
 
 

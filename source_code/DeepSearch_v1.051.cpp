@@ -11,6 +11,7 @@
 #include <time.h>
 #include <math.h>
 #include <iomanip>
+#include "getopt.h"
 
 //--- using multiple thread ----//__130630__//
 #include <pthread.h>

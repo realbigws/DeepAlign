@@ -17,6 +17,7 @@
 #include <time.h>
 #include <math.h>
 #include <iomanip>
+#include "getopt.h"
 using namespace std;
 
 
