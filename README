@@ -63,7 +63,7 @@ Linux system and CPU type:
 ==========================
 
 DeepAlign_Open has been compiled and tested under the following Linux system,
-	Linux version 3.2.0-72-generic (buildd@toyol) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #107-Ubuntu SMP Thu Nov 6 14:24:01 UTC 2014
+	Linux version 3.2.0-72-generic (buildd@toyol) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) )
 
 with the following CPU type,
 	Intel(R) Xeon(R) CPU E5-4607 0 @ 2.20GHz
@@ -74,9 +74,9 @@ with the following CPU type,
 Setup for structure homolog search:
 ===================================
 
-Enclosed in this package please find an example PDB database in databases/CAL_PDB .
-reference_pdb_list contains all the proteins in this folder. Please do not delete or change
-CAL_PDB and reference_pdb_list.
+Enclosed in this package please find an example PDB database in databases/CAL_PDB.tar.gz 
+reference_pdb_list contains all the proteins in this folder. 
+Please do not delete or change CAL_PDB and reference_pdb_list.
 
 Users can download some protein structure databases from http://raptorx.uchicago.edu/download/
 
@@ -91,8 +91,8 @@ copy bc*_list to databases/, where '*' stands for 40, 70, 90, 100
 If databases/pdb_BC100/ does not exist, create one.
 copy or link all the .pdb files to databases/pdb_BC100/
 
-Note: If you just want to do pairwise or multiple structure alignment, you do not 
-have to download these databases, which are supposed to be used for only structure homolog search.
+Note: If you just want to do pairwise or multiple structure alignment, 
+you do not have to download these databases, which are supposed to be used for only structure homolog search.
 You can also build your own database for structure homology search.
 
 ------
