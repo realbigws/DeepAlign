@@ -1,5 +1,6 @@
 CXX = g++
-CCFLAGS = -O3 -Wall -ffast-math -static
+#CCFLAGS = -O3 -Wall -ffast-math -static
+CCFLAGS = -O3
 OBJ = Ali_AFP.o Ali_Ali3.o Ali_Ori.o Bioinfo_Code.o BLOMAPS_Ori.o BLOSEN.o BLOSEN_CLE.o Computation_Utility.o Confo_Lett.o Kabsch.o getopt.o 3DCOMB.o Mol_Load.o Mol_Ori.o Mol_Out.o MultiAlign_Cent.o MultiAlign_Out.o Utility.o PDB_Utility.o Backbone_Sidechain.o PDB_Residue.o PDB_Chain.o PDB_File.o PDB_To_CLE.o TM_align.o TM_score.o XYZ.o ZoomIn_Align.o Dynamic_Programming.o
 
 make: $(OBJ)

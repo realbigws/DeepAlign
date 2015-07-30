@@ -680,6 +680,7 @@ int SCORE_FUNC;
 //-> for zscore and evalue
 void *DeepSearch_Pthread_Part_I(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	string deepalign="DeepAlign -P 0 -u 0 "; //-> simple screenout and fastest calculation
@@ -689,16 +690,17 @@ void *DeepSearch_Pthread_Part_I(void *arg)
 	//for zscore
 	sprintf(wscommand,"./%s -f tmp/%s_deepalign_refer_list.%d -r %s -q %s -m 3 -g 0 -h 1 -c 0 -p 0 -b tmp/%s_deepalign_zscore_rank.%d -e %d -w tmp/%s.tmpout",
 		deepalign.c_str(),SEQ_NAME.c_str(),proc_id,CAL_ROOT.c_str(),SEQ_FILE.c_str(),SEQ_NAME.c_str(),proc_id,maxsize,SEQ_NAME.c_str());
-	system(wscommand);
+	retv=system(wscommand);
 	//for evalue
 	sprintf(wscommand,"./%s -f tmp/%s_deepalign_refer_list.%d -r %s -q %s -j 0 -m 0 -p 0 -w tmp/%s_deepalign_evalue_rank.%d -e %d -s %d ",
 		deepalign.c_str(),SEQ_NAME.c_str(),proc_id,CAL_ROOT.c_str(),SEQ_FILE.c_str(),SEQ_NAME.c_str(),proc_id,maxsize,SCORE_FUNC);
-	system(wscommand);
+	retv=system(wscommand);
 }
 
 //-> for main search
 void *DeepSearch_Pthread_Part_II(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	string deepalign="DeepAlign -P 0 -u 0 "; //-> simple screenout and fastest calculation
@@ -708,12 +710,13 @@ void *DeepSearch_Pthread_Part_II(void *arg)
 	//process
 	sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list.%d -r %s -q %s -m 2 -g %lf -h %lf -c %lf -p 0 -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 		deepalign.c_str(),SEQ_NAME.c_str(),proc_id,PDB_ROOT.c_str(),SEQ_FILE.c_str(),MEAN,VARI,TMSCO_CUTOFF,SEQ_NAME.c_str(),proc_id,maxsize,SCORE_FUNC);
-	system(wscommand);
+	retv=system(wscommand);
 }
 
 //-> for final search
 void *DeepSearch_Pthread_Part_III(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	string deepalign="DeepAlign -P 0 -u 1 ";    //-> simple screenout and normal calculation
@@ -724,12 +727,13 @@ void *DeepSearch_Pthread_Part_III(void *arg)
 	//process
 	sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list.%d -r %s -q %s -m 0 -p 1 -d %s -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 		deepalign.c_str(),SEQ_NAME.c_str(),proc_id,PDB_ROOT.c_str(),SEQ_FILE.c_str(),output_dir.c_str(),SEQ_NAME.c_str(),proc_id,maxsize,SCORE_FUNC);
-	system(wscommand);
+	retv=system(wscommand);
 }
 
 //-> cut pdb
 void *DeepSearch_Pthread_Cut_PDB(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	sprintf(wscommand,"tmp/%s_deepalign_pdb_list.%d",SEQ_NAME.c_str(),proc_id);
@@ -740,16 +744,17 @@ void *DeepSearch_Pthread_Cut_PDB(void *arg)
 	{
 		sprintf(wscommand,"util/Domain_Proc tmp/%s/%s/%s-%s.fasta tmp/%s-%s.fasta_cut 0 0 0 1",
 			SEQ_NAME.c_str(),OUT_ROOT.c_str(),proc_list[i].c_str(),SEQ_NAME.c_str(),proc_list[i].c_str(),SEQ_NAME.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"util/PDB_File_Cut %s/%s.pdb tmp/%s-%s.fasta_cut_seq1 tmp/%s_tmp_pdb/%s.pdb 0",
 			PDB_ROOT.c_str(),proc_list[i].c_str(),proc_list[i].c_str(),SEQ_NAME.c_str(),SEQ_NAME.c_str(),proc_list[i].c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 }
 
 //-> re-align process
 void *DeepSearch_Pthread_Re_Align(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	string deepalign="DeepAlign -P 0 -u 1 "; //-> simple screenout and normal calculation
@@ -760,12 +765,13 @@ void *DeepSearch_Pthread_Re_Align(void *arg)
 	//process
 	sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list__.%d -r tmp/%s_tmp_pdb/ -q %s -m 0 -p 1 -i 0 -d %s -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 		deepalign.c_str(),SEQ_NAME.c_str(),proc_id,SEQ_NAME.c_str(),SEQ_FILE.c_str(),output_dir.c_str(),SEQ_NAME.c_str(),proc_id,maxsize,SCORE_FUNC);
-	system(wscommand);
+	retv=system(wscommand);
 }
 
 //-> clear temp
 void *DeepSearch_Pthread_Clean(void *arg)
 {
+	int retv;
 	int proc_id = (long) arg;
 	char wscommand[30000];
 	sprintf(wscommand,"tmp/%s_deepalign_pdb_list.%d",SEQ_NAME.c_str(),proc_id);
@@ -775,9 +781,9 @@ void *DeepSearch_Pthread_Clean(void *arg)
 	for(int i=0;i<size;i++)
 	{
 		sprintf(wscommand,"rm -f tmp/%s-%s.fasta_cut*",proc_list[i].c_str(),SEQ_NAME.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_tmp_pdb/%s.pdb",SEQ_NAME.c_str(),proc_list[i].c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 }
 
@@ -921,9 +927,9 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"mkdir -p tmp/%s_tmp_pdb",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"mkdir -p tmp/%s/%s",seq_name.c_str(),OUTROOT.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 
 	//[2] calculate reference_list
@@ -940,11 +946,11 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_refer_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string out_nam="tmp/"+seq_name+"_deepalign_refer_list";
 		retv=Shuffle_And_Cut_List(cal_list,out_nam,num_procs);
 	}
@@ -979,43 +985,43 @@ int num_procs=1;
 	{
 		//-> clear "wsout"
 		sprintf(wscommand,"rm -f tmp/%s.tmpout",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 
 		//-------- process temporary refer_list --------//
 		//-> delete temporary refer_list
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_refer_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> process zscore_rank
 		sprintf(wscommand,"cat tmp/%s_deepalign_zscore_rank.* > tmp/%s_deepalign_zscore_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k6 tmp/%s_deepalign_zscore_rank > tmp/%s/%s.rank_zscore",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> process evalue_rank
 		sprintf(wscommand,"cat tmp/%s_deepalign_evalue_rank.* > tmp/%s_deepalign_evalue_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_evalue_rank > tmp/%s/%s.rank_evalue",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		
 		//-------- get mean/vari and miu/beta ---------//
 		//-> get mean/vari
 		sprintf(wscommand,"awk '{print $6}' tmp/%s/%s.rank_zscore | tail -n+4 > tmp/%s.rank_zscore_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"util/Stat_List tmp/%s.rank_zscore_val > tmp/%s.rank_zscore_reso",
 			seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		infile="tmp/"+seq_name+".rank_zscore_reso";
 		Read_Mean_Vari(infile,mean,vari);
 		sprintf(wscommand,"rm -f tmp/%s.rank_zscore_*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> check mean/vari
 		if(fabs(mean)<0.01 && fabs(vari-1)<0.01)
 		{
@@ -1027,14 +1033,14 @@ int num_procs=1;
 		//-> get miu/beta
 		sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank_evalue | tail -n+4 > tmp/%s.rank_evalue_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"util/Fitting_EVD tmp/%s.rank_evalue_val > tmp/%s.rank_evalue_reso",
 			seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		infile="tmp/"+seq_name+".rank_evalue_reso";
 		Read_Miu_Beta(infile,miu,beta);
 		sprintf(wscommand,"rm -f tmp/%s.rank_evalue_*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 
 /*
@@ -1053,9 +1059,9 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string out_nam="tmp/"+seq_name+"_deepalign_pdb_list";
 		retv=Shuffle_And_Cut_List(pdb_list,out_nam,num_procs);
 	}
@@ -1091,15 +1097,15 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"cat tmp/%s_deepalign_pdb_rank.* > tmp/%s_deepalign_pdb_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_pdb_rank > tmp/%s/%s.rank__",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 
 	//========= determine topN by p-value =========//__130401__//
@@ -1110,7 +1116,7 @@ int num_procs=1;
 			//calculate pvalue-based cutoff
 			sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank__ > tmp/%s.rank__val",
 				seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 			string score_file="tmp/"+seq_name+".rank__val";
 			vector <double> pvalue_score;
 			WS_Get_Score_List(score_file,pvalue_score);
@@ -1125,7 +1131,7 @@ int num_procs=1;
 			N=newN;
 			//delete temporary files
 			sprintf(wscommand,"rm -f tmp/%s.rank__val",seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 		}
 	}
 
@@ -1136,7 +1142,7 @@ int num_procs=1;
 	{
 		sprintf(wscommand,"head -n %d tmp/%s/%s.rank__ | awk '{print $1}' > tmp/%s_deepalign_pdb_list_",
 			N,seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string in_nam="tmp/"+seq_name+"_deepalign_pdb_list_";
 		string out_nam="tmp/"+seq_name+"_deepalign_pdb_list";
 		retv=Shuffle_And_Cut_List(in_nam,out_nam,num_procs);
@@ -1198,7 +1204,7 @@ int num_procs=1;
 		{
 			sprintf(wscommand,"head -n %d tmp/%s/%s.rank__ | awk '{print $1}' > tmp/%s_deepalign_pdb_list_",
 				N,seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 			string in_nam="tmp/"+seq_name+"_deepalign_pdb_list_";
 			string out_nam="tmp/"+seq_name+"_deepalign_pdb_list__";
 			retv=Shuffle_And_Cut_List(in_nam,out_nam,num_procs);
@@ -1254,15 +1260,15 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"cat tmp/%s_deepalign_pdb_rank.* > tmp/%s_deepalign_pdb_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_pdb_rank > tmp/%s/%s.rank_",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 
 	//[4] output p-value and other score
@@ -1279,53 +1285,53 @@ int num_procs=1;
 		//get temp list
 		sprintf(wscommand,"awk '{print $1}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		int retv_size=WS_Get_Name_List(score_file,temp_list);
 		if(retv_size<N)N=retv_size;
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get temp length
 		sprintf(wscommand,"awk '{print $3}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,temp_length);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get original score
 		sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,origin_score);
 		WS_Calculate_Pvalue(origin_score,miu,beta,pvalue_score);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get tmscore
 		sprintf(wscommand,"awk '{print $12}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,tmscore);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get RMSD
 		sprintf(wscommand,"awk '{print $11}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,RMSD);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get LALI
 		sprintf(wscommand,"awk '{print $10}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,LALI);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	
 		//[2-3] final output
 		{
@@ -1440,7 +1446,7 @@ int num_procs=1;
 //	if(proc_id==0)
 	{
 		sprintf(wscommand,"rmdir tmp/%s_tmp_pdb",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 
 	//----- pthread terminate -----//

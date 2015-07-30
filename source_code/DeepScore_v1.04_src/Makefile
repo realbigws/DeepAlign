@@ -1,5 +1,6 @@
 CXX = g++
-CCFLAGS = -O3 -Wall -ffast-math -static 
+#CCFLAGS = -O3 -Wall -ffast-math -static 
+CCFLAGS = -O3
 OBJ = Utility.o getopt.o Computation_Utility.o DeepScore.o Mol_Load.o Mol_Ori.o Mol_Out.o PDB_Utility.o Backbone_Sidechain.o PDB_Residue.o PDB_Chain.o PDB_File.o XYZ.o Kabsch.o TM_score.o TM_align.o Confo_Beta.o Confo_Lett.o Dynamic_Programming.o PDB_To_CLE.o
 
 make: $(OBJ)
