@@ -43,7 +43,7 @@ void Usage()
 	cerr << "-d data_root:          The folder containing the database files (i.e., .pdb files) [default = databases/pdb_BC100/].\n\n";                
 	cerr << "-o out_file:           The file containing a brief summary of the searching results [default = query_name.rank ].\n\n";
 	cerr << "-t tmsco:              Apply TMscore cutoff during searching process [default = 0.35]. \n\n";
-	cerr << "-p pval:               Keep the results for top proteins according to P-value cutoff [default = 0.001]. \n\n";
+	cerr << "-p pval:               Keep the results for top proteins according to P-value cutoff [default = 0.001; set -1 to disable]. \n\n";
 	cerr << "-n topN:               Keep the results for top topN proteins [default = 100].\n\n";
 //	cerr << "-s score_func:         1:dist-score, 2:vect-score, 4:local-score. [default score_func is 7, i.e., using all]. \n\n";
 //	cerr << "-c :                   If specified, then the final template structure will be cut according to the alignment. \n\n";
@@ -1121,7 +1121,8 @@ int num_procs=1;
 			vector <double> pvalue_score;
 			WS_Get_Score_List(score_file,pvalue_score);
 			//determine N
-			int retN=WS_Get_Cutoff_Given_EVD(pvalue_score,miu,beta,pvalue_cutoff);
+			int retN=N;
+			if(pvalue_cutoff>0)retN=WS_Get_Cutoff_Given_EVD(pvalue_score,miu,beta,pvalue_cutoff);
 			int newN;
 			int oriN=N;             //default 100
 			int maxN=M<TOTN?M:TOTN; //default 1000
@@ -1381,7 +1382,7 @@ int num_procs=1;
 			for(int i=0;i<N;i++)
 			{
 				//init check
-				if(pvalue_score[i]>pvalue_cutoff)continue;
+				if(pvalue_cutoff>0 && pvalue_score[i]>pvalue_cutoff)continue;
 				//printf
 				pair<int,int> template_range,query_range;
 				string path = "tmp/"+ seq_name +"/" + OUTROOT +"/" + temp_list[i] + "-" + seq_name + ".fasta";
@@ -1420,7 +1421,7 @@ int num_procs=1;
 			for(int i=0;i<N;i++)
 			{
 				//init check
-				if(pvalue_score[i]>pvalue_cutoff)continue;
+				if(pvalue_cutoff>0 && pvalue_score[i]>pvalue_cutoff)continue;
 				//printf
 				string align_detail_file = "tmp/"+ seq_name +"/" + OUTROOT + "/" + temp_list[i] + "-" + seq_name + ".local";
 				output<<"No "<<i+1<<endl<<">"<<temp_list[i]<<endl;

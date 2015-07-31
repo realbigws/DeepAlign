@@ -49,7 +49,7 @@ void Usage()
 	cerr << "-d data_root:          The folder containing the database files (i.e., .pdb files) [default = databases/pdb_BC100/].\n\n";                
 	cerr << "-o out_file:           The file containing a brief summary of the searching results [default = query_name.rank ].\n\n";
 	cerr << "-t tmsco:              Apply TMscore cutoff during searching process [default = 0.35]. \n\n";
-	cerr << "-p pval:               Keep the results for top proteins according to P-value cutoff [default = 0.001]. \n\n";
+	cerr << "-p pval:               Keep the results for top proteins according to P-value cutoff [default = 0.001; set -1 to disable]. \n\n";
 	cerr << "-n topN:               Keep the results for top topN proteins [default = 100].\n\n";
 //	cerr << "-s score_func:         1:dist-score, 2:vect-score, 4:local-score. [default score_func is 7, i.e., using all]. \n\n";
 //	cerr << "-c :                   If specified, then the final template structure will be cut according to the alignment. \n\n";
@@ -821,6 +821,7 @@ num_procs=1;
 	}
 	
 	//======================= PART I: REFERENCE_SCAN =====================//
+	int retv;
 	int TOTN=Get_List_Len(pdb_list);
 	char wscommand[30000];
 	char wwcommand[30000];
@@ -829,9 +830,9 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"mkdir -p tmp/%s_tmp_pdb",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"mkdir -p tmp/%s/%s",seq_name.c_str(),OUTROOT.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 		MPI_Barrier(MPI_COMM_WORLD);
@@ -839,7 +840,6 @@ num_procs=1;
 
 	//[2] calculate reference_list
 	string infile="";
-	int retv;
 	int maxsize=3000;
 	double mean=0;
 	double vari=1;
@@ -851,11 +851,11 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_refer_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string out_nam="tmp/"+seq_name+"_deepalign_refer_list";
 		retv=Shuffle_And_Cut_List(cal_list,out_nam,num_procs);
 	}
@@ -871,8 +871,8 @@ num_procs=1;
 			deepalign.c_str(),seq_name.c_str(),proc_id,cal_root.c_str(),seq_file.c_str(),seq_name.c_str(),proc_id,maxsize,seq_name.c_str());
 		sprintf(wwcommand,"./%s -f tmp/%s_deepalign_refer_list.%d -r %s -q %s -j 0 -m 0 -p 0 -w tmp/%s_deepalign_evalue_rank.%d -e %d -s %d ",
 			deepalign.c_str(),seq_name.c_str(),proc_id,cal_root.c_str(),seq_file.c_str(),seq_name.c_str(),proc_id,maxsize,score_func);
-		system(wscommand);
-		system(wwcommand);
+		retv=system(wscommand);
+		retv=system(wwcommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -884,43 +884,43 @@ num_procs=1;
 	{
 		//-> clear "wsout"
 		sprintf(wscommand,"rm -f tmp/%s.tmpout",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 
 		//-------- process temporary refer_list --------//
 		//-> delete temporary refer_list
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_refer_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> process zscore_rank
 		sprintf(wscommand,"cat tmp/%s_deepalign_zscore_rank.* > tmp/%s_deepalign_zscore_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k6 tmp/%s_deepalign_zscore_rank > tmp/%s/%s.rank_zscore",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_zscore_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> process evalue_rank
 		sprintf(wscommand,"cat tmp/%s_deepalign_evalue_rank.* > tmp/%s_deepalign_evalue_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_evalue_rank > tmp/%s/%s.rank_evalue",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_evalue_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		
 		//-------- get mean/vari and miu/beta ---------//
 		//-> get mean/vari
 		sprintf(wscommand,"awk '{print $6}' tmp/%s/%s.rank_zscore | tail -n+4 > tmp/%s.rank_zscore_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"util/Stat_List tmp/%s.rank_zscore_val > tmp/%s.rank_zscore_reso",
 			seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		infile="tmp/"+seq_name+".rank_zscore_reso";
 		Read_Mean_Vari(infile,mean,vari);
 		sprintf(wscommand,"rm -f tmp/%s.rank_zscore_*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//-> check mean/vari
 		if(fabs(mean)<0.01 && fabs(vari-1)<0.01)
 		{
@@ -930,14 +930,14 @@ num_procs=1;
 		//-> get miu/beta
 		sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank_evalue | tail -n+4 > tmp/%s.rank_evalue_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"util/Fitting_EVD tmp/%s.rank_evalue_val > tmp/%s.rank_evalue_reso",
 			seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		infile="tmp/"+seq_name+".rank_evalue_reso";
 		Read_Miu_Beta(infile,miu,beta);
 		sprintf(wscommand,"rm -f tmp/%s.rank_evalue_*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -954,9 +954,9 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string out_nam="tmp/"+seq_name+"_deepalign_pdb_list";
 		retv=Shuffle_And_Cut_List(pdb_list,out_nam,num_procs);
 	}
@@ -971,7 +971,7 @@ num_procs=1;
 		if(proc_id==0)deepalign+=" -v ";   //head node, then display
 		sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list.%d -r %s -q %s -m 2 -g %lf -h %lf -c %lf -p 0 -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 			deepalign.c_str(),seq_name.c_str(),proc_id,pdb_root.c_str(),seq_file.c_str(),mean,vari,tmsco_cutoff,seq_name.c_str(),proc_id,maxsize,score_func);
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -981,15 +981,15 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"cat tmp/%s_deepalign_pdb_rank.* > tmp/%s_deepalign_pdb_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_pdb_rank > tmp/%s/%s.rank__",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -1004,12 +1004,13 @@ num_procs=1;
 			//calculate pvalue-based cutoff
 			sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank__ > tmp/%s.rank__val",
 				seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 			string score_file="tmp/"+seq_name+".rank__val";
 			vector <double> pvalue_score;
 			WS_Get_Score_List(score_file,pvalue_score);
 			//determine N
-			int retN=WS_Get_Cutoff_Given_EVD(pvalue_score,miu,beta,pvalue_cutoff);
+			int retN=N;
+			if(pvalue_cutoff>0)retN=WS_Get_Cutoff_Given_EVD(pvalue_score,miu,beta,pvalue_cutoff);
 			int newN;
 			int oriN=N;             //default 100
 			int maxN=M<TOTN?M:TOTN; //default 1000
@@ -1019,7 +1020,7 @@ num_procs=1;
 			N=newN;
 			//delete temporary files
 			sprintf(wscommand,"rm -f tmp/%s.rank__val",seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 		}
 	}
 
@@ -1030,7 +1031,7 @@ num_procs=1;
 	{
 		sprintf(wscommand,"head -n %d tmp/%s/%s.rank__ | awk '{print $1}' > tmp/%s_deepalign_pdb_list_",
 			N,seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		string in_nam="tmp/"+seq_name+"_deepalign_pdb_list_";
 		string out_nam="tmp/"+seq_name+"_deepalign_pdb_list";
 		retv=Shuffle_And_Cut_List(in_nam,out_nam,num_procs);
@@ -1046,7 +1047,7 @@ num_procs=1;
 		if(proc_id==0)deepalign+=" -v ";   //head node, then display
 		sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list.%d -r %s -q %s -m 0 -p 1 -d %s -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 			deepalign.c_str(),seq_name.c_str(),proc_id,pdb_root.c_str(),seq_file.c_str(),output_dir.c_str(),seq_name.c_str(),proc_id,maxsize,score_func);
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -1065,10 +1066,10 @@ num_procs=1;
 			{
 				sprintf(wscommand,"util/Domain_Proc tmp/%s/%s/%s-%s.fasta tmp/%s-%s.fasta_cut 0 0 0 1",
 					seq_name.c_str(),OUTROOT.c_str(),proc_list[i].c_str(),seq_name.c_str(),proc_list[i].c_str(),seq_name.c_str());
-				system(wscommand);
+				retv=system(wscommand);
 				sprintf(wscommand,"util/PDB_File_Cut %s/%s.pdb tmp/%s-%s.fasta_cut_seq1 tmp/%s_tmp_pdb/%s.pdb 0",
 					pdb_root.c_str(),proc_list[i].c_str(),proc_list[i].c_str(),seq_name.c_str(),seq_name.c_str(),proc_list[i].c_str());
-				system(wscommand);
+				retv=system(wscommand);
 			}
 		}
 #ifdef _MPI
@@ -1080,7 +1081,7 @@ num_procs=1;
 		{
 			sprintf(wscommand,"head -n %d tmp/%s/%s.rank__ | awk '{print $1}' > tmp/%s_deepalign_pdb_list_",
 				N,seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-			system(wscommand);
+			retv=system(wscommand);
 			string in_nam="tmp/"+seq_name+"_deepalign_pdb_list_";
 			string out_nam="tmp/"+seq_name+"_deepalign_pdb_list__";
 			retv=Shuffle_And_Cut_List(in_nam,out_nam,num_procs);
@@ -1096,7 +1097,7 @@ num_procs=1;
 			if(proc_id==0)deepalign+=" -v ";   //head node, then display
 			sprintf(wscommand,"./%s -f tmp/%s_deepalign_pdb_list__.%d -r tmp/%s_tmp_pdb/ -q %s -m 0 -p 1 -i 0 -d %s -w tmp/%s_deepalign_pdb_rank.%d -e %d -s %d ",
 				deepalign.c_str(),seq_name.c_str(),proc_id,seq_name.c_str(),seq_file.c_str(),output_dir.c_str(),seq_name.c_str(),proc_id,maxsize,score_func);
-			system(wscommand);
+			retv=system(wscommand);
 		}
 
 #ifdef _MPI
@@ -1112,9 +1113,9 @@ num_procs=1;
 			for(int i=0;i<size;i++)
 			{
 				sprintf(wscommand,"rm -f tmp/%s-%s.fasta_cut*",proc_list[i].c_str(),seq_name.c_str());
-				system(wscommand);
+				retv=system(wscommand);
 				sprintf(wscommand,"rm -f tmp/%s_tmp_pdb/%s.pdb",seq_name.c_str(),proc_list[i].c_str());
-				system(wscommand);
+				retv=system(wscommand);
 			}
 		}
 
@@ -1128,15 +1129,15 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_list*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"cat tmp/%s_deepalign_pdb_rank.* > tmp/%s_deepalign_pdb_rank",seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank.*",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"sort -n -r -k8 tmp/%s_deepalign_pdb_rank > tmp/%s/%s.rank_",seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		sprintf(wscommand,"rm -f tmp/%s_deepalign_pdb_rank",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -1156,53 +1157,53 @@ num_procs=1;
 		//get temp list
 		sprintf(wscommand,"awk '{print $1}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		int retv_size=WS_Get_Name_List(score_file,temp_list);
 		if(retv_size<N)N=retv_size;
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get temp length
 		sprintf(wscommand,"awk '{print $3}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,temp_length);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get original score
 		sprintf(wscommand,"awk '{print $8}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,origin_score);
 		WS_Calculate_Pvalue(origin_score,miu,beta,pvalue_score);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get tmscore
 		sprintf(wscommand,"awk '{print $12}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,tmscore);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get RMSD
 		sprintf(wscommand,"awk '{print $11}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,RMSD);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		//get LALI
 		sprintf(wscommand,"awk '{print $10}' tmp/%s/%s.rank_ > tmp/%s.rank_val",
 			seq_name.c_str(),seq_name.c_str(),seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 		score_file="tmp/"+seq_name+".rank_val";
 		WS_Get_Score_List(score_file,LALI);
 		sprintf(wscommand,"rm -f tmp/%s.rank_val",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	
 		//[2-3] final output
 		{
@@ -1252,7 +1253,7 @@ num_procs=1;
 			for(int i=0;i<N;i++)
 			{
 				//init check
-				if(pvalue_score[i]>pvalue_cutoff)continue;
+				if(pvalue_cutoff>0 && pvalue_score[i]>pvalue_cutoff)continue;
 				//printf
 				pair<int,int> template_range,query_range;
 				string path = "tmp/"+ seq_name +"/" + OUTROOT +"/" + temp_list[i] + "-" + seq_name + ".fasta";
@@ -1291,7 +1292,7 @@ num_procs=1;
 			for(int i=0;i<N;i++)
 			{
 				//init check
-				if(pvalue_score[i]>pvalue_cutoff)continue;
+				if(pvalue_cutoff>0 && pvalue_score[i]>pvalue_cutoff)continue;
 				//printf
 				string align_detail_file = "tmp/"+ seq_name +"/" + OUTROOT + "/" + temp_list[i] + "-" + seq_name + ".local";
 				output<<"No "<<i+1<<endl<<">"<<temp_list[i]<<endl;
@@ -1321,7 +1322,7 @@ num_procs=1;
 	if(proc_id==0)
 	{
 		sprintf(wscommand,"rmdir tmp/%s_tmp_pdb",seq_name.c_str());
-		system(wscommand);
+		retv=system(wscommand);
 	}
 #ifdef _MPI
 	MPI_Barrier(MPI_COMM_WORLD);
