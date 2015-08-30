@@ -797,7 +797,7 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 				sprintf(ws_output,"T %-14s %4d %s %4d (%d)\n",
 					nam1.c_str(),start1+1,ami1.c_str(),end1+1,moln1);
 				ws_output_str+=ws_output;
-				sprintf(ws_output,"RMSD                %s           \n",score_out.c_str());
+				sprintf(ws_output,"RMSD                  %s           \n",score_out.c_str());
 				ws_output_str+=ws_output;
 				sprintf(ws_output,"S %-14s %4d %s %4d (%d)\n",
 					nam2.c_str(),start2+1,ami2.c_str(),end2+1,moln2);
@@ -904,7 +904,7 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 			sprintf(ws_output,"T %-14s %4d %s %4d (%d)\n",
 				nam1.c_str(),start1+1,ami1.c_str(),end1+1,moln1);
 			ws_output_str+=ws_output;
-			sprintf(ws_output,"RMSD                %s           \n",score_out.c_str());
+			sprintf(ws_output,"RMSD                  %s           \n",score_out.c_str());
 			ws_output_str+=ws_output;
 			sprintf(ws_output,"S %-14s %4d %s %4d (%d)\n",
 				nam2.c_str(),start2+1,ami2.c_str(),end2+1,moln2);
