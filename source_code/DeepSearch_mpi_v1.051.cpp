@@ -30,7 +30,7 @@ int proc_id;
 void Usage()
 {
 	//-------- header part -------//
-	cerr << "DeepSearch v1.05 (MPI version) \n\n";
+	cerr << "DeepSearch v1.136 (MPI version) [Aug-29-2015] \n\n";
 	cerr << "Search a protein database for a query protein structure. \n";
 	cerr << "-------------------------------------------------------- \n";
 	cerr << "Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n";
@@ -40,19 +40,21 @@ void Usage()
 
 	//-------- option part ------//
 	cerr << "Usage: \n";
-	cerr << "mpirun -np NP ./DeepSearch_mpi -q query_file [-l data_list] [-d data_root] [-o out_file] [-t tmsco] [-p pval] [-n topN]\n\n";
-//	cerr << "                    [-t tmsco] [-p pval] [-n topN] [-s score_func] [-c]\n\n";
+	cerr << "mpirun -np NP ./DeepSearch_mpi -q query_file [-l data_list] [-d data_root] [-L ref_list] [-D ref_root] [-o out_file] \n";
+	cerr << "                      [-t tmsco] [-p pval] [-n topN] [-s score_func] [-c]\n\n";
 	cerr << "Options: \n\n";
 	cerr << "-np NP:                Number of processors.\n\n";
 	cerr << "-q query_file:         Query protein file.  \n\n";
 	cerr << "-l data_list:          The list of protein database [default = databases/bc40_list].\n\n";
-	cerr << "-d data_root:          The folder containing the database files (i.e., .pdb files) [default = databases/pdb_BC100/].\n\n";                
+	cerr << "-d data_root:          The folder containing the database files (i.e., .pdb files) [default = databases/pdb_BC100/].\n\n";
+	cerr << "-L ref_list:           The list of reference database [default = databases/reference_pdb_list].\n\n";
+	cerr << "-D ref_root:           The folder containing the reference files (in .pdb format) [default = databases/CAL_PDB/].\n\n";
 	cerr << "-o out_file:           The file containing a brief summary of the searching results [default = query_name.rank ].\n\n";
 	cerr << "-t tmsco:              Apply TMscore cutoff during searching process [default = 0.35]. \n\n";
 	cerr << "-p pval:               Keep the results for top proteins according to P-value cutoff [default = 0.001; set -1 to disable]. \n\n";
 	cerr << "-n topN:               Keep the results for top topN proteins [default = 100].\n\n";
-//	cerr << "-s score_func:         1:dist-score, 2:vect-score, 4:local-score. [default score_func is 7, i.e., using all]. \n\n";
-//	cerr << "-c :                   If specified, then the final template structure will be cut according to the alignment. \n\n";
+	cerr << "-s score_func:         1:dist-score, 2:vect-score, 4:local-score. [default score_func is 7, i.e., using all]. \n\n";
+	cerr << "-c :                   If specified, then the final template structure will be cut according to the alignment. \n\n";
 	cerr << "        Example: \n";
 	cerr << "            To search the protein database in which any two proteins share <=70% seq id, please run the following command:\n";
 	cerr << "                mpirun -np 12 ./DeepSearch_mpi -q 1pazA.pdb -l databases/bc70_list -d databases/pdb_BC100/ -t 0.35 -n 200 \n";
@@ -179,8 +181,6 @@ int Shuffle_And_Cut_List(string &list,string &outnam,int num)
 	//judge
 	if(iter!=num-1)
 	{
-//		fprintf(stderr,"bad here !! iter[%d]!=num[%d] \n",iter,num);
-//		return -1;
 		for(i=iter+1;i<=num;i++)
 		{
 			sprintf(command,"%s.%d",outnam.c_str(),i);
@@ -705,6 +705,8 @@ num_procs=1;
 	string seq_file;
 	string pdb_list = "databases/bc40_list";
 	string pdb_root = "databases/pdb_BC100/";
+	string cal_list = "databases/reference_pdb_list";
+	string cal_root = "databases/CAL_PDB";
 	string out_file;
 	//-> parameter related
 	double tmsco_cutoff=0.35;   //-> 0.35
@@ -722,7 +724,7 @@ num_procs=1;
 	extern char* optarg;
 	extern int optind;
 	int c=0;
-	while((c=getopt(argc,argv,"q:l:d:o:t:p:n:s:z:x:c"))!=EOF)
+	while((c=getopt(argc,argv,"q:l:d:L:D:o:t:p:n:s:z:x:c"))!=EOF)
 	{
 		switch(c) 
 		{
@@ -735,6 +737,12 @@ num_procs=1;
 			break;
 		case 'd':
 			pdb_root=optarg;
+			break;
+		case 'L':
+			cal_list=optarg;
+			break;
+		case 'D':
+			cal_root=optarg;
 			break;
 		case 'o':
 			out_file=optarg;
@@ -845,8 +853,6 @@ num_procs=1;
 	double vari=1;
 	double miu=0;
 	double beta=1;
-	string cal_list="databases/reference_pdb_list";
-	string cal_root="databases/CAL_PDB";
 	//[2-1] process reference_list with length
 	if(proc_id==0)
 	{

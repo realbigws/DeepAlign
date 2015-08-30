@@ -791,20 +791,20 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 				ws_output_str+=ws_output;
 				if(CLEorNOT==1)
 				{
-					sprintf(ws_output,"cle                 %s           \n",cle1.c_str());
+					sprintf(ws_output,"T cle                 %s           \n",cle1.c_str());
 					ws_output_str+=ws_output;
 				}
-				sprintf(ws_output,"%-14s %4d %s %4d (%d)\n",
+				sprintf(ws_output,"T %-14s %4d %s %4d (%d)\n",
 					nam1.c_str(),start1+1,ami1.c_str(),end1+1,moln1);
 				ws_output_str+=ws_output;
 				sprintf(ws_output,"RMSD                %s           \n",score_out.c_str());
 				ws_output_str+=ws_output;
-				sprintf(ws_output,"%-14s %4d %s %4d (%d)\n",
+				sprintf(ws_output,"S %-14s %4d %s %4d (%d)\n",
 					nam2.c_str(),start2+1,ami2.c_str(),end2+1,moln2);
 				ws_output_str+=ws_output;
 				if(CLEorNOT==1)
 				{
-					sprintf(ws_output,"cle                 %s           \n",cle2.c_str());
+					sprintf(ws_output,"S cle                 %s           \n",cle2.c_str());
 					ws_output_str+=ws_output;
 				}
 				sprintf(ws_output,"\n");
@@ -898,20 +898,20 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 			ws_output_str+=ws_output;
 			if(CLEorNOT==1)
 			{
-				sprintf(ws_output,"cle                 %s           \n",cle1.c_str());
+				sprintf(ws_output,"T cle                 %s           \n",cle1.c_str());
 				ws_output_str+=ws_output;
 			}
-			sprintf(ws_output,"%-14s %4d %s %4d (%d)\n",
+			sprintf(ws_output,"T %-14s %4d %s %4d (%d)\n",
 				nam1.c_str(),start1+1,ami1.c_str(),end1+1,moln1);
 			ws_output_str+=ws_output;
 			sprintf(ws_output,"RMSD                %s           \n",score_out.c_str());
 			ws_output_str+=ws_output;
-			sprintf(ws_output,"%-14s %4d %s %4d (%d)\n",
+			sprintf(ws_output,"S %-14s %4d %s %4d (%d)\n",
 				nam2.c_str(),start2+1,ami2.c_str(),end2+1,moln2);
 			ws_output_str+=ws_output;
 			if(CLEorNOT==1)
 			{
-				sprintf(ws_output,"cle                 %s           \n",cle2.c_str());
+				sprintf(ws_output,"S cle                 %s           \n",cle2.c_str());
 				ws_output_str+=ws_output;
 			}
 			sprintf(ws_output,"\n");
