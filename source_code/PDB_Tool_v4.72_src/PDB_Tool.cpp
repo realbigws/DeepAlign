@@ -301,7 +301,7 @@ void Output_Protein_Features_ACC(
 	}
 	else
 	{
-		for(i=0;i<moln;i++)fprintf(fpp,"%d\n",acc_surface.AC_normal[i]);
+		for(i=0;i<moln;i++)fprintf(fpp,"%3d %3d\n",acc_surface.AC_normal[i],acc_surface.AC_output[i]);
 		fclose(fpp);
 	}
 }
