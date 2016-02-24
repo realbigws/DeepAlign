@@ -14,10 +14,10 @@ using namespace std;
 void print_help_msg(void) 
 {
 	cout << "========================================================|" << endl;
-	cout << "PDB_Tool  (version 4.72) [2015.07.20]                   |" << endl;
+	cout << "PDB_Tool  (version 4.75) [2017.02.25]                   |" << endl;
 	cout << "          Transform original .PDB file to compact form  |" << endl;
 	cout << "Usage:   ./PDB_Tool <-i input> <-r range> <-o output>   |" << endl;
-	cout << "Or,      ./PDB_Tool <-L list>                           |" << endl;
+	cout << "Or,      ./PDB_Tool <-i inroot> <-L list> <-o outroot>  |" << endl;
 	cout << "--------------------------------------------------------|" << endl;
 	cout << "For <-i input> input type,                              |" << endl;
 	cout << "-i input  : input original PDB file, e.g., 1col.pdb     |" << endl;
@@ -25,9 +25,9 @@ void print_help_msg(void)
 	cout << "-o output : output PDB file, e.g., 1colA.pdb            |" << endl;
 	cout << "--------------------------------------------------------|" << endl;
 	cout << "For <-L list> input type,                               |" << endl;
-	cout << "The 1st line in <list> specifies the input directory.   |" << endl;
-	cout << "The 2nd line in <list> specifies the output directory.  |" << endl;
-	cout << "The other lines in <list> indicate [input range output] |" << endl;
+	cout << "-i inroot  : input directory of original PDBs           |" << endl;
+	cout << "-o outroot : output directory for generated PDBs        |" << endl;
+	cout << "The rows in <list> indicate [input range output]        |" << endl;
 	cout << "          e.g.,  1col.pdb A:1-51 1colA.pdb              |" << endl;
 	cout << "========================================================|" << endl;
 	cout << "                Primary options                         |" << endl;
@@ -458,7 +458,8 @@ void Output_Protein_Features(
 //others:
 //input range output-> e.g., 1col.pdb A:1-51 1colA.res
 //[note] -> should only contain two  ' '
-int WS_PDB_Back_Process(string &list,int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
+int WS_PDB_Back_Process(string &input_dir,string &list,string &output_dir,
+	int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
 {
 	//class
 	Mol_File mol_input;
@@ -537,6 +538,11 @@ int WS_PDB_Back_Process(string &list,int OutType,int OutMode,int OutGlys,int Out
 	mol_input.MEMORY_LIMIT=totlen;
 
 
+	//--- get input and output
+	path=input_dir;
+	outa=output_dir;
+
+/*
 	//---just_temp---//[get path]
 	{
 		if(!getline(fin,buf,'\n'))
@@ -552,6 +558,7 @@ int WS_PDB_Back_Process(string &list,int OutType,int OutMode,int OutGlys,int Out
 		}
 		outa=buf;
 	}
+*/
 	//process
 	int zero=-1;
 	int count=0;
@@ -979,7 +986,7 @@ int main(int argc, char** argv)
 		//-> if set with -F, then automatically set -R
 		if(INPUT_FIFI!=0)INPUT_RECO=1;
 		//-> list or single
-		if(LIST_OR_SINGLE>0)WS_PDB_Back_Process(INPUT_LIST,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
+		if(LIST_OR_SINGLE>0)WS_PDB_Back_Process(INPUT_NAM,INPUT_LIST,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
 		else WS_PDB_Back_Process_Single(INPUT_NAM,INPUT_RAN,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
 		exit(0);
 	}
