@@ -14,7 +14,7 @@ using namespace std;
 void print_help_msg(void) 
 {
 	cout << "========================================================|" << endl;
-	cout << "PDB_Tool  (version 4.75) [2017.02.25]                   |" << endl;
+	cout << "PDB_Tool  (version 4.75) [2016.02.25]                   |" << endl;
 	cout << "          Transform original .PDB file to compact form  |" << endl;
 	cout << "Usage:   ./PDB_Tool <-i input> <-r range> <-o output>   |" << endl;
 	cout << "Or,      ./PDB_Tool <-i inroot> <-L list> <-o outroot>  |" << endl;
@@ -145,6 +145,20 @@ void process_args(int argc,char** argv)
 		}
 	}
 }
+
+//------------- check file existance -------//
+int Check_File_Existance(string &pdbfile)
+{
+	ifstream fin;
+	fin.open(pdbfile.c_str(), ios::in);
+	if(fin.fail()!=0)
+	{
+		fprintf(stderr,"pdbfile %s not found!!\n",pdbfile.c_str());
+		return -1;
+	}
+	return 0;
+}
+
 
 //------------- Get_PDB_File_Len -----------//
 int Get_PDB_File_Len(string &pdbfile) //-> only suitable for pdb_BC100 pdb_file
@@ -451,14 +465,14 @@ void Output_Protein_Features(
 }
 
 
-//==================== WS_PDB_Back_Process ===============// (process list)
+//==================== PDB_Back_Process ===============// (process list)
 //[list_style]
 //first_line: input_dir
 //second_line: output_dir
 //others:
 //input range output-> e.g., 1col.pdb A:1-51 1colA.res
 //[note] -> should only contain two  ' '
-int WS_PDB_Back_Process(string &input_dir,string &list,string &output_dir,
+int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
 {
 	//class
@@ -591,6 +605,13 @@ int WS_PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 		file=path+'/'+input;
 		temp="0 "+file+' '+chain;
 
+		//check the existance of file
+		ret_val=Check_File_Existance(file);
+		if(ret_val==-1)
+		{
+			if(OutLogf==1)fprintf(fq,"%s X -1\n",buf.c_str());
+			continue;
+		}
 
 		//pre_process
 		ret_val=mol_input.XYZ_Tranform(temp,moln,0,0,0,0,0,0);
@@ -772,7 +793,7 @@ int WS_PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 
 //===================== single_process ===================//__110710__//
 //[single_style]
-void WS_PDB_Back_Process_Single(string &input,string &range,string &output,
+void PDB_Back_Process_Single(string &input,string &range,string &output,
 	int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
 {
 	//class
@@ -986,8 +1007,8 @@ int main(int argc, char** argv)
 		//-> if set with -F, then automatically set -R
 		if(INPUT_FIFI!=0)INPUT_RECO=1;
 		//-> list or single
-		if(LIST_OR_SINGLE>0)WS_PDB_Back_Process(INPUT_NAM,INPUT_LIST,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
-		else WS_PDB_Back_Process_Single(INPUT_NAM,INPUT_RAN,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
+		if(LIST_OR_SINGLE>0)PDB_Back_Process(INPUT_NAM,INPUT_LIST,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
+		else PDB_Back_Process_Single(INPUT_NAM,INPUT_RAN,INPUT_OUT,INPUT_TYPE,INPUT_MODE,INPUT_GLYS,INPUT_NOCA,INPUT_RECO,INPUT_FIFI,INPUT_LOGF,WARN_OUT);
 		exit(0);
 	}
 }
