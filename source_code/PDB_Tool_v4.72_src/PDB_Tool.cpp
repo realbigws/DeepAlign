@@ -278,7 +278,7 @@ void Output_Protein_Features_AMI_SSE_CLE(
 
 //--> output ACC and ACC_Value
 void Output_Protein_Features_ACC(
-	string &outroot,string &outname,Acc_Surface &acc_surface,
+	string &outroot,string &outname,Acc_Surface *acc_surface,
 	int moln,PDB_Residue *pdb,XYZ **mcc,int *mcc_side,char *ami,char *acc)
 {
 	//init
@@ -290,7 +290,7 @@ void Output_Protein_Features_ACC(
 	for(i=0;i<moln;i++)chain_fold.set_residue(i,pdb[i]);
 	//------ output ACC_Code and ACC_Value ------//
 	for(i=0;i<moln;i++)pdb[i].get_XYZ_array(mcc[i],mcc_side[i]);
-	acc_surface.AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
+	acc_surface->AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
 	//output ACC_Code
 	file="";
 	file=file+outroot+"/"+outname+".acc";
@@ -315,7 +315,7 @@ void Output_Protein_Features_ACC(
 	}
 	else
 	{
-		for(i=0;i<moln;i++)fprintf(fpp,"%3d %3d\n",acc_surface.AC_normal[i],acc_surface.AC_output[i]);
+		for(i=0;i<moln;i++)fprintf(fpp,"%3d %3d\n",acc_surface->AC_normal[i],acc_surface->AC_output[i]);
 		fclose(fpp);
 	}
 }
@@ -348,7 +348,7 @@ int ACC_To_Int(char c)
 }
 //----- output protein features -----//
 void Output_Protein_Features(
-	string &outroot,string &outname,Acc_Surface &acc_surface,XYZ *mol,XYZ *mcb,
+	string &outroot,string &outname,Acc_Surface *acc_surface,XYZ *mol,XYZ *mcb,
 	int moln,PDB_Residue *pdb,XYZ **mcc,int *mcc_side,char *ami,char *acc)
 {
 	//init
@@ -378,7 +378,7 @@ void Output_Protein_Features(
 
 	//------ calculate ACC_Code and ACC_Value ------//
 	for(i=0;i<moln;i++)pdb[i].get_XYZ_array(mcc[i],mcc_side[i]);
-	acc_surface.AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
+	acc_surface->AC_Calc_SolvAcc(mcc,ami,moln,acc,mcc_side);
 
 	//------ calculate contact number for CA and CB ---//
 	double DIST_CUTOFF = 64; //-> 8.0A (note that in older version of TPL, the CA/CB contact cutoff is 7.0A
@@ -458,7 +458,7 @@ void Output_Protein_Features(
 		{
 			char c=ACC_To_Int(acc[i]);
 			fprintf(fpp,"%4d   %c      0       %c      %c     %1d    %3d  %2d  %2d   %8.3f  %8.3f  %8.3f  %8.3f  %8.3f  %8.3f\n",
-				i+1,AMI[i],SSE[i],CLE[i],c,acc_surface.AC_normal[i],cn_ca[i],cn_cb[i],mol[i].X,mol[i].Y,mol[i].Z,mcb[i].X,mcb[i].Y,mcb[i].Z);
+				i+1,AMI[i],SSE[i],CLE[i],c,acc_surface->AC_normal[i],cn_ca[i],cn_cb[i],mol[i].X,mol[i].Y,mol[i].Z,mcb[i].X,mcb[i].Y,mcb[i].Z);
 		}
 	}
 	fclose(fpp);
@@ -475,13 +475,14 @@ void Output_Protein_Features(
 int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
 {
+	int totlen=30000;
 	//class
 	Mol_File mol_input;
 	Mol_Out mol_output;
-	Confo_Beta confo_beta;
-	Confo_Back confo_back;
 	Confo_Lett confo_lett;
-	Acc_Surface acc_surface;
+	Confo_Beta *confo_beta=new Confo_Beta(totlen);
+	Confo_Back *confo_back=new Confo_Back(totlen);
+	Acc_Surface *acc_surface=new Acc_Surface(totlen);
 	//init
 	ifstream fin;
 	string buf;
@@ -495,7 +496,6 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	int pos[10];
 	int wscount;
 	int ret_val;
-	int totlen=30000;
 	int moln;
 	PDB_Residue *pdb=new PDB_Residue[totlen];
 	FILE *fp=0;
@@ -640,6 +640,9 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 				DeleteArray2D(&mbb,totlen);
 				DeleteArray2D(&mcc,totlen);
 				delete [] mcc_side;
+				delete confo_beta;
+				delete confo_back;
+				delete acc_surface;
 				//create
 				pdb=new PDB_Residue[totlen];
 				mol=new XYZ[totlen];
@@ -650,6 +653,9 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 				NewArray2D(&mbb,totlen,5);
 				NewArray2D(&mcc,totlen,15);
 				mcc_side=new int[totlen];
+				confo_beta=new Confo_Beta(totlen);
+				confo_back=new Confo_Back(totlen);
+				acc_surface=new Acc_Surface(totlen);
 				//memory limit
 				mol_input.MEMORY_LIMIT=totlen;
 			}
@@ -709,8 +715,8 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 				{
 					//[1]recon
 					confo_lett.btb_ori(0,0,0,moln,mol,cle);
-					confo_back.Recon_Back_WS_Main(mol,cle,moln,mbb);      //given CA, recon BackBone (N,CA,C,O,CB)
-					confo_beta.WS_Recon_Beta_21(mol,mcb,moln,ami,cle);    //given CA, recon CB
+					confo_back->Recon_Back_WS_Main(mol,cle,moln,mbb);      //given CA, recon BackBone (N,CA,C,O,CB)
+					confo_beta->WS_Recon_Beta_21(mol,mcb,moln,ami,cle);    //given CA, recon CB
 					//[2]assign
 					for(i=0;i<moln;i++)
 					{
@@ -786,6 +792,9 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	DeleteArray2D(&mbb,totlen);
 	DeleteArray2D(&mcc,totlen);
 	delete [] mcc_side;
+	delete confo_beta;
+	delete confo_back;
+	delete acc_surface;
 	fin.close();
 	fin.clear();
 	return wwscount;
@@ -796,15 +805,7 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 void PDB_Back_Process_Single(string &input,string &range,string &output,
 	int OutType,int OutMode,int OutGlys,int OutNoca,int OutReco,int OutFifi,int OutLogf,int OutWarn)
 {
-	//class
-	Mol_File mol_input;
-	Mol_Out mol_output;
-	Confo_Beta confo_beta;
-	Confo_Back confo_back;
-	Confo_Lett confo_lett;
-	Acc_Surface acc_surface;
-	mol_input.MODRES=1;
-	//init
+	//get length
 	int ret_val;
 	int totlen=Get_PDB_File_Len(input);
 	if(totlen<=0)
@@ -812,6 +813,15 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 		fprintf(stderr,"pdbfile %s length error!!\n",input.c_str());
 		exit(-1);
 	}
+	//class
+	Mol_File mol_input;
+	Mol_Out mol_output;
+	Confo_Lett confo_lett;
+	Confo_Beta *confo_beta=new Confo_Beta(totlen);
+	Confo_Back *confo_back=new Confo_Back(totlen);
+	Acc_Surface *acc_surface=new Acc_Surface(totlen);
+	mol_input.MODRES=1;
+	//init
 	int moln;
 	PDB_Residue *pdb=new PDB_Residue[totlen];
 	string TER="TER                                                                             ";
@@ -865,6 +875,9 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				DeleteArray2D(&mbb,totlen);
 				DeleteArray2D(&mcc,totlen);
 				delete [] mcc_side;
+				delete confo_beta;
+				delete confo_back;
+				delete acc_surface;
 				//create
 				pdb=new PDB_Residue[totlen];
 				mol=new XYZ[totlen];
@@ -875,6 +888,9 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				NewArray2D(&mbb,totlen,5);
 				NewArray2D(&mcc,totlen,15);
 				mcc_side=new int[totlen];
+				confo_beta=new Confo_Beta(totlen);
+				confo_back=new Confo_Back(totlen);
+				acc_surface=new Acc_Surface(totlen);
 				//memory limit
 				mol_input.MEMORY_LIMIT=totlen;
 			}
@@ -917,8 +933,8 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				{
 					//[1]recon
 					confo_lett.btb_ori(0,0,0,moln,mol,cle);
-					confo_back.Recon_Back_WS_Main(mol,cle,moln,mbb);      //given CA, recon BackBone (N,CA,C,O,CB)
-					confo_beta.WS_Recon_Beta_21(mol,mcb,moln,ami,cle);    //given CA, recon CB
+					confo_back->Recon_Back_WS_Main(mol,cle,moln,mbb);      //given CA, recon BackBone (N,CA,C,O,CB)
+					confo_beta->WS_Recon_Beta_21(mol,mcb,moln,ami,cle);    //given CA, recon CB
 					//[2]assign
 					for(i=0;i<moln;i++)
 					{
@@ -996,6 +1012,9 @@ end:
 	DeleteArray2D(&mbb,totlen);
 	DeleteArray2D(&mcc,totlen);
 	delete [] mcc_side;
+	delete confo_beta;
+	delete confo_back;
+	delete acc_surface;
 }
 
 //============== main ===============//
