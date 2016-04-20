@@ -47,6 +47,11 @@ cd source_code/
         make
 cd ../
 
+--------------
+
+3. update the package
+
+git submodule foreach --recursive git pull origin master
 
 
 
