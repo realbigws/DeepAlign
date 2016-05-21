@@ -1711,7 +1711,7 @@ void Output_PyMol_Script(FILE *fws,int *AFP_Cor)
 //============== main process =============//
 void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	string &ali_file,string &out_file,string &detail_file,
-	int Out_Script,int Normalize,int Out_Screen,int SIMPLY_LOAD)
+	int Out_Script,int Normalize,double Distance_Cutoff,int Out_Screen,int SIMPLY_LOAD)
 {
 	//data structure
 	Confo_Lett confo_lett;
@@ -1795,6 +1795,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 
 	//alignment process
 	//-> load alignment
+	vector<pair<int, int> > alignment;
 	vector<pair<int, int> > alignment_out;
 	string nam1_con,nam2_con;
 	vector <int> ali1_seq_pdb;
@@ -1802,7 +1803,6 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	if(ali_file!="")  //-> load alignment file
 	{
 		//load alignment file
-		vector<pair<int, int> > alignment;
 		string nam1_content,nam2_content;
 		string nam1_full,nam2_full;
 		string wnam1,wnam2;
@@ -1825,6 +1825,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		nam2_con=nam2_pdb;
 		//process
 		process_oriami_record_simp(nam1_pdb.c_str(),nam2_pdb.c_str(),alignment_out);
+		alignment=alignment_out;
 		ali1_seq_pdb.resize(nam1_pdb.length());
 		for(int i=0;i<(int)nam1_pdb.length();i++)ali1_seq_pdb[i]=i;
 		ali2_seq_pdb.resize(nam2_pdb.length());
@@ -1851,7 +1852,20 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	//-> get weight matrix	
 	TM_align tm_align(DEEPALIGN_MAXSIZE);
 	tm_align.TM_Align_Init(TM_MOLN1,TM_MOLN2);
-	tm_align.TM_DIST_CUT=0;
+	if(Distance_Cutoff==0)
+	{
+		tm_align.TM_DIST_CUT=0;
+	}
+	else if(Distance_Cutoff<0)
+	{
+		tm_align.TM_DIST_CUT=1;
+		Distance_Cutoff=tm_align.d8;
+	}
+	else
+	{
+		tm_align.TM_DIST_CUT=1;
+		tm_align.d8=Distance_Cutoff;
+	}
 	tm_align.TM_cb1=TM_MCB1;
 	tm_align.TM_cb2=TM_MCB2;
 	//-> calculate local score
@@ -1895,7 +1909,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	Calc_Global_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,distance,tmsco);
 
 	//-> check lali
-	if(lali_out!=lali)
+	if( Distance_Cutoff==0 &&  lali_out!=lali)
 	{
 		fprintf(stderr,"LALI NOT EQUAL [%d]!=[%d] \n",lali_out,lali);
 		exit(-1);
@@ -1998,10 +2012,9 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		}
 		else
 		{
-			fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID\n");
-			fprintf(fp,"#----------------------- normalized length = %4d -----------------------------------------------\n",norm_len);
-			fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d\n",
-				nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out);
+			fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff\n");
+			fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+				nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out,norm_len,Distance_Cutoff);
 			fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 			fprintf(fp," %9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
 			fprintf(fp," %9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[3],TM_ROTMAT[4],TM_ROTMAT[5],TM_ROTMAT[10]);
@@ -2057,7 +2070,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		}
 		else
 		{
-			Output_Detailed(fp,nam1_con,nam2_con,alignment_out,ali1_seq_pdb,ali2_seq_pdb,
+			Output_Detailed(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
 				blos_pos,cles_pos,seqid_pos,match_wei,distance,tmsco);
 			fclose(fp);
 		}
@@ -2075,8 +2088,8 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	string out_str="";
 	if(Out_Screen==0)  //simplest screen-out
 	{
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d\n",
-			nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out,norm_len);
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+			nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out,norm_len,Distance_Cutoff);
 		out_str=ws_command;
 	}
 	else //-> screen out new
@@ -2104,6 +2117,8 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		sprintf(ws_command,"\n");
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"#----- Normalization length for TMscore, MAXSUB, GDT_TS, and GDT_HA is %4d\n",norm_len);
+		fin_tmp_str+=ws_command;
+		sprintf(ws_command,"#----- Distance cutoff value is %lf\n",Distance_Cutoff);
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA\n");
 		fin_tmp_str+=ws_command;
@@ -2210,13 +2225,13 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.05 [May-30-2014] \n");
+	fprintf(stderr,"DeepScore v1.06 [Dec-26-2015] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepScore protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name] \n");
-	fprintf(stderr,"               [-d detail_file] [-s script_option] [-P screenout] [-n normalize_len] \n\n");
+	fprintf(stderr,"     [-d detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-c distance_cut]\n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2239,8 +2254,11 @@ void Usage(void)
 	fprintf(stderr,"                       [0], the minimal length of the 1st and 2nd input protein. (Set as default)\n");
 	fprintf(stderr,"                       -1,  the length of the first input protein. \n");
 	fprintf(stderr,"                       -2,  the length of the second input protein. \n\n");
+	fprintf(stderr,"-c distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
+	fprintf(stderr,"                       [0], keep all residue pairs. (Set as default) \n");
+	fprintf(stderr,"                       -1,  automatically assign a distance cutoff value according to d0 in TMscore \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
-	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen \n");
+	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
 
 }
 
@@ -2302,13 +2320,14 @@ int main(int argc,char **argv)
 		int Out_Script=0; // no script out
 		int Out_Screen=1; // detailed screen out
 		int Normalize=0;
+		double Distance_Cutoff=0;
 
 		//---- process argument ----//
 		extern char* optarg;
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:"))!=EOF)
+			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:c:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2346,6 +2365,9 @@ int main(int argc,char **argv)
 					case 'n':
 						Normalize = atoi(optarg);
 						break;
+					case 'c':
+						Distance_Cutoff = atof(optarg);
+						break;
 
 					//----- default ----//
 					default:
@@ -2358,7 +2380,7 @@ int main(int argc,char **argv)
 		{
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"o:d:s:a:x:y:P:n:"))!=EOF)
+			while((c=getopt(argc,argv,"o:d:s:a:x:y:P:n:c:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2386,6 +2408,9 @@ int main(int argc,char **argv)
 						break;
 					case 'n':
 						Normalize = atoi(optarg);
+						break;
+					case 'c':
+						Distance_Cutoff = atof(optarg);
 						break;
 
 					//----- default ----//
@@ -2421,7 +2446,7 @@ int main(int argc,char **argv)
 		//---- main process ----//
 		int SIMPLY_LOAD=0;
 		Main_Process(name1,range1,name2,range2,ali_file,out_file,detail_file,
-			Out_Script,Normalize,Out_Screen,SIMPLY_LOAD);
+			Out_Script,Normalize,Distance_Cutoff,Out_Screen,SIMPLY_LOAD);
 		exit(0);
 	}
 }
