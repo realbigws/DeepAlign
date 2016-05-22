@@ -1410,7 +1410,8 @@ void BLOSUN_CLESUM_Output(char *ami1,char *ami2,char *cle1,char *cle2,
 //====================== DeepAlign_main function ===================//__110630__//
 int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &out,
 		string &ali_file,int Out_More,int Out_Screen,int Normalize,int Kill_Gaps,int Score_Func,int QualityLevel,
-		string &output_root,string &out_str,double &ret_val,int SIMPLY_LOAD,int Kill_Frag)
+		string &output_root,string &out_str,double &ret_val,int SIMPLY_LOAD,int Kill_Frag,
+		double Distance_Cutoff,double Multi_Cut)
 {
 	//-------- ws_weight_process ------------//__110810__//
 	if(Score_Func>=4) //Wei_Score
@@ -1447,8 +1448,6 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	{
 		clepaps.Kill_Frag=1;    //kill frag~~~
 	}
-	
-
 
 	//------ process ------//
 	clepaps.CLEFAPS_Input_Func(TM_CLE1,TM_CLE2,TM_AMI1,TM_AMI2,TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2);
@@ -1468,7 +1467,23 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		}
 		norm_d0=clepaps.Calc_TM_d0_Simp(norm_len);
 	}
-	
+
+	//---- distance cutoff setup ------//__2016.05.20__//
+	if(Distance_Cutoff==0)
+	{
+		clepaps.TM_DIST_CUT=0;
+	}
+	else if(Distance_Cutoff<0)
+	{
+		clepaps.TM_DIST_CUT=1;
+		Distance_Cutoff=clepaps.d8;
+	}
+	else
+	{
+		clepaps.TM_DIST_CUT=1;
+		clepaps.d8=Distance_Cutoff;
+	}
+
 	//-------- speed up -------//
 	double ws_ret;
 	if(ali_file=="") // no initial alignment file input
@@ -1535,8 +1550,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		char ws_command[30000];
 		double zerod=0;
 		int zeroi=0;
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d\n",
-			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,zeroi,zeroi,zerod,zeroi,zerod,zerod,zerod,zerod,zerod,zeroi);
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,zeroi,zeroi,zerod,zeroi,zerod,zerod,zerod,zerod,zerod,zeroi,norm_len,Distance_Cutoff);
 		out_str=ws_command;
 		ret_val=zerod;
 		return 0;
@@ -1714,10 +1729,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 			}
 			else
 			{
-				fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID\n");
-				fprintf(fp,"#----------------------- normalized length = %4d -----------------------------------------------\n",norm_len);
-				fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d\n",
-					wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid);
+				fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff\n");
+				fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+					wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff);
 				fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 				fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
 				fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[3],TM_ROTMAT[4],TM_ROTMAT[5],TM_ROTMAT[10]);
@@ -1754,12 +1768,13 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
 				gdt2=1.0*(Ret_Sco[0]+Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3])/(4.0*norm_len);  //ha_GDT
 				maxsub=1.0*Ret_Sco[5]/norm_len;
-				if(tms < 0.8*fin_tms || gdt1 < 0.8*fin_gdt)  // we use 0.8 cutoff here !!
-				{
-					temp_score[wsk_]=-1;
-					continue;
-				}
-				if(tms < 0.35)  //-> we show multi solutions for TMscore > 0.35 !!
+//				if(tms < 0.8*fin_tms || gdt1 < 0.8*fin_gdt)  // we use 0.8 cutoff here !!
+//				{
+//					temp_score[wsk_]=-1;
+//					continue;
+//				}
+//				if(tms < 0.35)  //-> we show multi solutions for TMscore > 0.35 !!
+				if(tms < Multi_Cut )
 				{
 					temp_score[wsk_]=-1;
 					continue;
@@ -1893,10 +1908,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				}
 				else
 				{
-					fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID\n");
-					fprintf(fp,"#----------------------- normalized length = %4d -----------------------------------------------\n",norm_len);
-					fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d\n",
-					wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid);
+					fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff\n");
+					fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f \n",
+						wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff);
 					fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 					fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
 					fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[3],TM_ROTMAT[4],TM_ROTMAT[5],TM_ROTMAT[10]);
@@ -1916,9 +1930,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	char ws_command[300000];
 	if(Out_Screen==0)  //simplest screen-out
 	{
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d\n",
-				wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,fin_blosum,fin_clesum,fin_wms,fin_lali,fin_rms,
-				fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_seqid,norm_len);
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,fin_blosum,fin_clesum,fin_wms,fin_lali,fin_rms,
+			fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_seqid,norm_len,Distance_Cutoff);
 		out_str=ws_command;
 	}
 	else //-> screen out new
@@ -1946,6 +1960,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		sprintf(ws_command,"\n");
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"#----- Normalization length for TMscore, MAXSUB, GDT_TS, and GDT_HA is %4d\n",norm_len);
+		fin_tmp_str+=ws_command;
+		sprintf(ws_command,"#----- Distance cutoff value is %lf\n",Distance_Cutoff);
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA\n");
 		fin_tmp_str+=ws_command;
@@ -2457,13 +2473,14 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.134 [Feb-02-2015] \n");
+	fprintf(stderr,"DeepAlign v1.2 [May-20-2016] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepAlign protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name]\n");
-	fprintf(stderr,"                                [-p out_option] [-u quality] [-P screenout] [-n normalize_len] \n\n");
+	fprintf(stderr,"                                [-p out_option] [-u quality] [-P screenout] [-n normalize_len] \n");
+	fprintf(stderr,"                                [-s score_func] [-C distance_cut] [-M multi_cut] \n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2485,8 +2502,15 @@ void Usage(void)
 	fprintf(stderr,"                       [0], the minimal length of the 1st and 2nd input protein. (Set as default)\n");
 	fprintf(stderr,"                       -1,  the length of the first input protein. \n");
 	fprintf(stderr,"                       -2,  the length of the second input protein. \n\n");
+	fprintf(stderr,"-s score_func:          1:distance-score, 2:vector-score, 4:evolution-score; Note that these scores could be combined,\n");
+	fprintf(stderr,"                       [7], using all score combinations. (Set as default) \n\n");
+	fprintf(stderr,"-C distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
+	fprintf(stderr,"                        0,  keep all residue pairs. \n");
+	fprintf(stderr,"                       [-1],automatically assign a distance cutoff value according to d0 in TMscore. (Set as default) \n\n");
+	fprintf(stderr,"-M multi_cut:           if multiple solution is specified, set a TMscore cutoff for minimal quality of the solution/ \n");
+	fprintf(stderr,"                        (default is 0.35) \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
-	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen \n");
+	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
 
 }
 
@@ -2570,6 +2594,8 @@ int main(int argc,char **argv)
 		int quality_level=1;
 		double loc_para=10;
 		int Kill_Frag=1;   // we kill frags by default
+		double Distance_Cutoff=-1; // we cut the previous aligned positions exceeding this distance cutoff
+		double Multi_Cut = 0.35;   // we kill multi-solution below this value
 		//reference z_score
 		double refer_z_mean=-1;
 		double refer_z_vari=-1;
@@ -2579,7 +2605,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:v"))!=EOF)
+			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:C:M:v"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2673,6 +2699,12 @@ int main(int argc,char **argv)
 					case 'j':
 						Kill_Frag = atoi(optarg);
 						break;
+					case 'C':
+						Distance_Cutoff = atof(optarg);
+						break;
+					case 'M':
+						Multi_Cut = atof(optarg);
+						break;
 	
 					//---- verbose related ---//
 					case 'd':
@@ -2698,7 +2730,7 @@ int main(int argc,char **argv)
 			job_style_pair=1;
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:"))!=EOF)
+			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:C:M:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2749,6 +2781,12 @@ int main(int argc,char **argv)
 						break;
 					case 'j':
 						Kill_Frag = atoi(optarg);
+						break;
+					case 'C':
+						Distance_Cutoff = atof(optarg);
+						break;
+					case 'M':
+						Multi_Cut = atof(optarg);
 						break;
 						
 					//----- default ----//
@@ -2871,6 +2909,11 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: SIMPLY_LOAD must be integer between 0 to 1 \n");
 			exit(-1);
 		}
+		if(Multi_Cut<0 || Multi_Cut>1)
+		{
+			fprintf(stderr,"ERROR: Multi_Cut must be float between 0 to 1 \n");
+			exit(-1);
+		}
 
 		//=========== DeepAlign process =========//
 		int retv;
@@ -2949,7 +2992,7 @@ int main(int argc,char **argv)
 			if(out!="" && Out_More<=0)Out_More=1;
 			if(out=="" && Out_More>0)out=wsnam1+"-"+wsnam2;
 			DeepAlign_main(clepaps,wsnam1,wsnam2,out,ali_file,Out_More,Out_Screen,
-				Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag);
+				Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
 			//-> output
 			if(rankbose==1)
 			{
@@ -3021,7 +3064,7 @@ int main(int argc,char **argv)
 				double ret_val;
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
-					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag);
+					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
 				//-> output
 				if(rankbose==1)
 				{
@@ -3290,7 +3333,7 @@ int main(int argc,char **argv)
 				double ret_val;
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
-					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag);
+					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag,Distance_Cutoff,Multi_Cut);
 				//-> output record
 				out_rec.push_back(out_str);
 				out_sco.push_back(ret_val);

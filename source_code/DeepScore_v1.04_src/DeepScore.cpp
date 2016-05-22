@@ -1395,7 +1395,7 @@ void Output_Detailed(FILE *fp,
 			//check mapping align
 			if(ali1_seq_pdb[ii-1]<0 || ali2_seq_pdb[jj-1]<0)
 			{
-				fprintf(fp,"%c%c\n",nam1_content[ii-1],nam2_content[jj-1]);
+				fprintf(fp,"%c%c X\n",nam1_content[ii-1],nam2_content[jj-1]);
 			}
 			else
 			{
@@ -2225,13 +2225,13 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.06 [Dec-26-2015] \n");
+	fprintf(stderr,"DeepScore v1.07 [May-20-2016] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepScore protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name] \n");
-	fprintf(stderr,"     [-d detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-c distance_cut]\n\n");
+	fprintf(stderr,"     [-d detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-C distance_cut]\n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2254,7 +2254,7 @@ void Usage(void)
 	fprintf(stderr,"                       [0], the minimal length of the 1st and 2nd input protein. (Set as default)\n");
 	fprintf(stderr,"                       -1,  the length of the first input protein. \n");
 	fprintf(stderr,"                       -2,  the length of the second input protein. \n\n");
-	fprintf(stderr,"-c distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
+	fprintf(stderr,"-C distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
 	fprintf(stderr,"                       [0], keep all residue pairs. (Set as default) \n");
 	fprintf(stderr,"                       -1,  automatically assign a distance cutoff value according to d0 in TMscore \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
@@ -2327,7 +2327,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:c:"))!=EOF)
+			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:C:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2365,7 +2365,7 @@ int main(int argc,char **argv)
 					case 'n':
 						Normalize = atoi(optarg);
 						break;
-					case 'c':
+					case 'C':
 						Distance_Cutoff = atof(optarg);
 						break;
 
@@ -2380,7 +2380,7 @@ int main(int argc,char **argv)
 		{
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"o:d:s:a:x:y:P:n:c:"))!=EOF)
+			while((c=getopt(argc,argv,"o:d:s:a:x:y:P:n:C:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2409,7 +2409,7 @@ int main(int argc,char **argv)
 					case 'n':
 						Normalize = atoi(optarg);
 						break;
-					case 'c':
+					case 'C':
 						Distance_Cutoff = atof(optarg);
 						break;
 
