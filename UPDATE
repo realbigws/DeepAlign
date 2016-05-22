@@ -1,4 +1,17 @@
 
+--------------------------------
+DeepAlign_Open v1.2 (2016_05_20)
+--------------------------------
+
+1) allow user to specify the function to be optimizated. ( -s score_func option)
+
+2) allow user to specify the distance cutoff. ( -C distance_cut option)
+
+3) multiple solution output is now functional. ( -p out_option option)
+
+
+
+
 ---------------------------
 LIG_Tool v1.01 (2015_02_19)
 ---------------------------
