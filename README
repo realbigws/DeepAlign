@@ -11,7 +11,17 @@ http://ttic.uchicago.edu/~wangsheng/
 --------------------------------------------------------
 
 
-1. Pairwise protein structure alignment or structure homolog search
+1. Protein structure analysis 
+[Reference]
+--------------------------------------------------------
+Jianzhu Ma, Sheng Wang.
+ALGORITHMS, APPLICATIONS AND CHALLENGES OF PROTEIN STRUCTURE ALIGNMENT.
+Advances in Protein Chemistry and Structural Biology, 2014 (invited).
+http://www.ncbi.nlm.nih.gov/pubmed/24629187
+--------------------------------------------------------
+
+
+2. Pairwise protein structure alignment or structure homolog search
 [Reference]
 --------------------------------------------------------
 Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.
@@ -21,7 +31,7 @@ http://www.ncbi.nlm.nih.gov/pubmed/23486213
 --------------------------------------------------------
 
 
-2. Multiple protein structure alignment
+3. Multiple protein structure alignment
 [Reference]
 ------------------------------------------------------------
 Sheng Wang, Jian Peng and Jinbo Xu.
@@ -35,6 +45,8 @@ http://www.ncbi.nlm.nih.gov/pubmed/21791532
 ========
 Upgrade:
 ========
+
+For DeepAlign_Open (v1.2)
 
 1. allow user to specify the function to be optimizated. ( -s score_func option)
 
