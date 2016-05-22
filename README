@@ -1,6 +1,6 @@
 =======================
-DeepAlign_Open (v1.135)
-date: 2015.02.20
+DeepAlign_Open (v1.2)
+date: 2016.05.20
 =======================
 
 Author: Sheng Wang , Jinbo Xu
@@ -27,6 +27,17 @@ ALIGNMENT OF DISTANTLY-RELATED PROTEIN STRUCTURES: ALGORITHM,
                   Bioinformatics. 2011 Sep 15;27(18):2537-45
 http://www.ncbi.nlm.nih.gov/pubmed/21791532
 ------------------------------------------------------------
+
+
+========
+Upgrade:
+========
+
+1. allow user to specify the function to be optimizated. ( -s score_func option)
+
+2. allow user to specify the distance cutoff. ( -C distance_cut option)
+
+3. multiple solution output is now functional. ( -p out_option option)
 
 
 
