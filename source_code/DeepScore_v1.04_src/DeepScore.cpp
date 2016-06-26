@@ -2048,6 +2048,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 			{
 				if(Out_Script==1)Output_JMol_Script(fp,AFP);
 				if(Out_Script==2)Output_RasMol_Script(fp,AFP);
+				if(Out_Script==3)Output_PyMol_Script(fp,AFP);
 				fclose(fp);
 			}
 			delete [] AFP;
@@ -2225,7 +2226,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.07 [May-20-2016] \n");
+	fprintf(stderr,"DeepScore v1.08 [May-20-2016] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
@@ -2248,6 +2249,7 @@ void Usage(void)
 	fprintf(stderr,"-s script_option:      [0], do not output script files. (Set as default)\n");
 	fprintf(stderr,"                        1,  output script for JMol, if -o is specified.\n");
 	fprintf(stderr,"                        2,  output script for RasMol, if -o is specified.\n\n");
+	fprintf(stderr,"                        3,  output script for PyMol, if -o is specified.\n\n");
 	fprintf(stderr,"-P screenout:           0,  simple screenout evaluation scores. \n");
 	fprintf(stderr,"                       [1], detailed screenout evaluation scores. (Set as default) \n\n");
 	fprintf(stderr,"-n normalize_len:       Specify a normalization length for the calculation of TMscore,MAXSUB,GDT_TS/HA. In particular,\n");
