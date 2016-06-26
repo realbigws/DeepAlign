@@ -2248,7 +2248,7 @@ void Usage(void)
 	fprintf(stderr,"                        for each aligned position with SeqID, BLOSUM, CLESUM, DeepScore, RMSD, and TMscore.\n\n");
 	fprintf(stderr,"-s script_option:      [0], do not output script files. (Set as default)\n");
 	fprintf(stderr,"                        1,  output script for JMol, if -o is specified.\n");
-	fprintf(stderr,"                        2,  output script for RasMol, if -o is specified.\n\n");
+	fprintf(stderr,"                        2,  output script for RasMol, if -o is specified.\n");
 	fprintf(stderr,"                        3,  output script for PyMol, if -o is specified.\n\n");
 	fprintf(stderr,"-P screenout:           0,  simple screenout evaluation scores. \n");
 	fprintf(stderr,"                       [1], detailed screenout evaluation scores. (Set as default) \n\n");
@@ -2439,9 +2439,9 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: normal_len must be interger >= -2 \n");
 			exit(-1);
 		}
-		if(Out_Script<0 || Out_Script>2)
+		if(Out_Script<0 || Out_Script>3)
 		{
-			fprintf(stderr,"ERROR: script_option must be 0,1, or 2 \n");
+			fprintf(stderr,"ERROR: script_option must be 0,1,2 or 3 \n");
 			exit(-1);
 		}
 
