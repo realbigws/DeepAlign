@@ -458,6 +458,113 @@ void Extract_Alignment(string &nam1_seq,string &nam1_pdb,string &nam2_seq,string
 	delete [] ali4;
 }
 
+//--------------- residue number alginment -------------//
+int Residue_Number_Alignment(PDB_Residue *pdb1, PDB_Residue *pdb2,int l1,int l2,
+	vector<pair<int,int> > &alignment_out)
+{
+	//create align
+	int *ali1=new int[l1];
+	int *ali2=new int[l2];
+	for(int i=0;i<l1;i++)ali1[i]=-1;
+	for(int i=0;i<l2;i++)ali2[i]=-1;
+	//record position
+	map<string, int > ws_mapping1;   //M1, mapping the PDB's name
+	map<string, int > ws_mapping2;   //M2, mapping the PDB's name
+	map<string, int >::iterator iter;
+	//record pdb1
+	for(int i=0;i<l1;i++)
+	{
+		//-> record
+		string res1;
+		if(pdb1[i].get_PDB_residue_number(res1)!=0)continue;
+		iter = ws_mapping1.find(res1);
+		if(iter != ws_mapping1.end())
+		{
+			fprintf(stderr,"duplicated mapping1 !! %s \n",res1.c_str());
+			continue;
+		}
+		ws_mapping1.insert(map < string, int >::value_type(res1, i));
+	}
+	//extract pdb2
+	int match=0;
+	for(int i=0;i<l2;i++)
+	{
+		//-> record
+		string res2;
+		if(pdb2[i].get_PDB_residue_number(res2)!=0)continue;
+		iter = ws_mapping2.find(res2);
+		if(iter != ws_mapping2.end())
+		{
+			fprintf(stderr,"duplicated mapping2 !! %s \n",res2.c_str());
+			continue;
+		}
+		ws_mapping2.insert(map < string, int >::value_type(res2, i));
+		//-> mapping
+		iter = ws_mapping1.find(res2);
+		if(iter != ws_mapping1.end())
+		{
+			int key=ws_mapping1[res2];
+			ali1[key]=i;
+			ali2[i]=key;
+			match++;
+		}
+	}
+	//dump to alignment
+	//final
+	{
+		alignment_out.clear();
+		//start
+		int i,j;
+		int ii,jj;
+		int wlen;
+		int pre_ii=0;
+		int pre_jj=0;
+		for(i=1;i<=l1;i++)
+		{
+			ii=i;
+			jj=ali1[i-1];  //ali1 starts from 0, correspondence also from 0
+			if(jj==-1)
+			{
+				continue;
+			}
+			else
+			{
+				jj++;
+				//previous_path
+				wlen=ii-pre_ii;
+				for(j=1;j<wlen;j++)
+				{
+					pre_ii++;
+					alignment_out.push_back (pair<int,int>(pre_ii, -pre_jj)); //Ix
+				}
+				wlen=jj-pre_jj;
+				for(j=1;j<wlen;j++)
+				{
+					pre_jj++;
+					alignment_out.push_back (pair<int,int>(-pre_ii, pre_jj)); //Iy
+				}
+				//current_path
+				alignment_out.push_back (pair<int,int>(ii, jj)); //Match
+				//update
+				pre_ii=ii;
+				pre_jj=jj;
+			}
+		}
+		//termi
+		pre_ii++;
+		for(i=pre_ii;i<=l1;i++)alignment_out.push_back (pair<int,int>(i, -pre_jj)); //Ix
+		pre_jj++;
+		for(i=pre_jj;i<=l2;i++)alignment_out.push_back (pair<int,int>(-l1, i));  //Iy
+	}
+	//delete
+	delete [] ali1;
+	delete [] ali2;
+	//return
+	return match;
+}
+
+
+
 
 //=========== blosum calculate ============//
 //=================//
@@ -942,7 +1049,42 @@ int Calc_Local_Score(char *ami1,char *cle1,char *ami2,char *cle2,
 	return lali;
 }
 
+//------ rotate full atom ------//
+void Rotate_FullAtom(Kabsch &kabsch, PDB_Residue &in, PDB_Residue &out, double *rotmat)
+{
+	int i,k;
+	int num;
+	PDB_Residue pdb;
+	XYZ xyz;
+	int numb;
+	double R,tmpr;
+	//input
+	pdb=in;
+	//rotate backbone
+	num=pdb.get_backbone_totnum();
+	for(k=0;k<num;k++)
+	{
+		if(pdb.get_backbone_part_index(k)==0)continue;
+		pdb.get_backbone_atom(k,xyz,numb,R,tmpr);
+		kabsch.rot_point(xyz,xyz,rotmat);
+		pdb.set_backbone_atom(k,xyz,numb,R,tmpr);
+	}
+	//rotate sidechain
+	num=pdb.get_sidechain_totnum();
+	for(k=0;k<num;k++)
+	{
+		if(pdb.get_sidechain_part_index(k)==0)continue;
+		pdb.get_sidechain_atom(k,xyz,numb,R,tmpr);
+		kabsch.rot_point(xyz,xyz,rotmat);
+		pdb.set_sidechain_atom(k,xyz,numb,R,tmpr);
+	}
+	//output
+	out=pdb;
+}
+
+
 //------ calculate distance ---------//
+//-> CA version
 int Calc_Global_Score(XYZ *mol1,XYZ *mol2,int moln1,int moln2,
 	double *rotmat,int *ali2,double d0,
 	vector <double> &distance, vector <double> &tmsco)
@@ -977,6 +1119,108 @@ int Calc_Global_Score(XYZ *mol1,XYZ *mol2,int moln1,int moln2,
 	return lali;
 }
 
+//-> Full version
+int Calc_Global_Score_FULL(Kabsch &kabsch,
+	PDB_Residue *pdb1,PDB_Residue *pdb2,
+	int moln1,int moln2,
+	double *rotmat,int *ali2,double d0,
+	vector <vector <string> > &recname,
+	vector <vector <double> > &distance, 
+	vector <vector <double> > &tmsco)
+{
+	int i;
+	int pos;
+	double ori_d=d0*d0;
+	double dist2;
+	double dist;
+	double tms;
+	int lali=0;
+	PDB_Residue m1,m2,m3;
+	XYZ x1,x2,x3;
+	//init
+	recname.clear();
+	distance.clear();
+	tmsco.clear();
+	//proc
+	for(i=0;i<moln2;i++)
+	{
+		pos=ali2[i];
+		if(pos<0 || pos>=moln1)continue;
+		//---- init ----//
+		vector <string> nam;
+		vector <double> dis;
+		vector <double> ttm;
+		//----- get m1,m2,m3 ----//
+		m1=pdb1[pos];
+		m2=pdb2[i];
+		Rotate_FullAtom(kabsch, m1, m3, rotmat);
+		//----- check ----//
+		char amino1=m1.get_AA();
+		char amino2=m2.get_AA();
+		if(amino1 != amino2)
+		{
+			fprintf(stderr,"amino1 %c not equal to amino2 %c \n",amino1,amino2);
+			//check add
+			recname.push_back(nam);
+			distance.push_back(dis);
+			tmsco.push_back(ttm);
+			lali++;
+			continue;
+		}
+		char amino=amino1;
+		int num;
+
+		//-> check backbone
+		num=m1.get_backbone_totnum();
+		for(int k=0;k<num;k++)
+		{
+			//check index
+			if(m2.get_backbone_part_index(k)==0)continue;
+			if(m3.get_backbone_part_index(k)==0)continue;
+			string atomname=backbone_atom_name_decode(k);
+			//get atom
+			m2.get_backbone_atom(k,x2);
+			m3.get_backbone_atom(k,x3);
+			//dist
+			dist2=x2.distance_square(x3);
+			dist=sqrt(dist2);
+			tms=1.0/(1.0+dist2/ori_d);
+			//add
+			nam.push_back(atomname);
+			dis.push_back(dist);
+			ttm.push_back(tms);
+		}
+
+		//-> check sidechain
+		num=m1.get_sidechain_totnum();
+		for(int k=0;k<num;k++)
+		{
+			//check index
+			if(m2.get_sidechain_part_index(k)==0)continue;
+			if(m3.get_sidechain_part_index(k)==0)continue;
+			string atomname=sidechain_atom_name_decode(k,amino);
+			//get atom
+			m2.get_sidechain_atom(k,x2);
+			m3.get_sidechain_atom(k,x3);
+			//dist
+			dist2=x2.distance_square(x3);
+			dist=sqrt(dist2);
+			tms=1.0/(1.0+dist2/ori_d);
+			//add
+			nam.push_back(atomname);
+			dis.push_back(dist);
+			ttm.push_back(tms);
+		}
+
+		//--- final add ---//
+		recname.push_back(nam);
+		distance.push_back(dis);
+		tmsco.push_back(ttm);
+		lali++;
+	}
+	//return
+	return lali;
+}
 
 //------ calculate local matrix -------//
 void Calc_Local_Matrix(char *ami1,char *cle1,char *ami2,char *cle2,
@@ -1419,6 +1663,61 @@ void Output_Detailed(FILE *fp,
 	}
 }
 
+//-> Full version
+void Output_Detailed_FULL(FILE *fp,
+	string &nam1_content,string &nam2_content,
+	vector<pair<int, int> > &alignment,
+	vector <int> &ali1_seq_pdb,vector <int> &ali2_seq_pdb,
+	vector <int> &blos_pos,vector <int> &cles_pos,
+	vector <int> &seqid_pos,vector <double> &match_wei,
+	vector <vector <string> > &recname,
+	vector <vector <double> > &distance,
+	vector <vector <double> > &tmsco)
+{
+	int i;
+	int ii,jj;
+	int size=(int)alignment.size();
+	int rel_lali=0;
+	for(i=0;i<size;i++)
+	{
+		ii=alignment[i].first;
+		jj=alignment[i].second;
+		if(ii>0 && jj>0)
+		{
+			//check mapping align
+			if(ali1_seq_pdb[ii-1]<0 || ali2_seq_pdb[jj-1]<0)
+			{
+				fprintf(fp,"%c%c  CA  X\n",nam1_content[ii-1],nam2_content[jj-1]);
+			}
+			else
+			{
+				//---- FULL version ----//
+				int num=(int)recname[rel_lali].size();
+				for(int k=0;k<num;k++)
+				{
+					fprintf(fp,"%c%c %4s %1d %4d %4d %6.1f %6.2f %6.3f\n",
+						nam1_content[ii-1],nam2_content[jj-1],recname[rel_lali][k].c_str(),
+						seqid_pos[rel_lali],blos_pos[rel_lali],cles_pos[rel_lali],match_wei[rel_lali],
+						distance[rel_lali][k],tmsco[rel_lali][k]);
+				}
+				rel_lali++;
+			}
+		}
+		else
+		{
+			if(ii>0)
+			{
+				fprintf(fp,"%c-  CA\n",nam1_content[ii-1]);
+			}
+			if(jj>0)
+			{
+				fprintf(fp,"-%c  CA\n",nam2_content[jj-1]);
+			}
+		}
+	}
+}
+
+
 //===================== script related =======================//__2014_05_30__//
 //----------------- Alignment_To_Script ------------//
 //[note]: the size of AFP should be (moln1+moln2)*4
@@ -1710,7 +2009,7 @@ void Output_PyMol_Script(FILE *fws,int *AFP_Cor)
 
 //============== main process =============//
 void Main_Process(string &file1,string &range1,string &file2,string &range2,
-	string &ali_file,string &out_file,string &detail_file,
+	string &ali_file,int &ali_res,string &out_file,string &detail_file,int &detail_full,
 	int Out_Script,int Normalize,double Distance_Cutoff,int Out_Screen,int SIMPLY_LOAD)
 {
 	//data structure
@@ -1816,21 +2115,26 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		Extract_Alignment(nam1_content,nam1_pdb,nam2_content,nam2_pdb,alignment,alignment_out,
 			ali1_seq_pdb,ali2_seq_pdb);
 	}
-	else              //-> generate alignment
+	else
 	{
 		//init
 		string nam1_pdb=TM_AMI1;
 		string nam2_pdb=TM_AMI2;
 		nam1_con=nam1_pdb;
 		nam2_con=nam2_pdb;
-		//process
-		process_oriami_record_simp(nam1_pdb.c_str(),nam2_pdb.c_str(),alignment_out);
+		//align
+		if(ali_res==1)  //-> use residue number
+			Residue_Number_Alignment(TM_PDB1,TM_PDB2,TM_MOLN1,TM_MOLN2,alignment_out);
+		else            //-> generate alignment
+			process_oriami_record_simp(nam1_pdb.c_str(),nam2_pdb.c_str(),alignment_out);
 		alignment=alignment_out;
+		//assign
 		ali1_seq_pdb.resize(nam1_pdb.length());
 		for(int i=0;i<(int)nam1_pdb.length();i++)ali1_seq_pdb[i]=i;
 		ali2_seq_pdb.resize(nam2_pdb.length());
 		for(int i=0;i<(int)nam2_pdb.length();i++)ali2_seq_pdb[i]=i;
 	}
+
 
 	//-> ali1 & ali2
 	int *ali1=new int[TM_MOLN1];
@@ -1904,9 +2208,6 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	double gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
 	double gdt2=1.0*(Ret_Sco[0]+Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3])/(4.0*norm_len);  //ha_GDT
 	double maxsub=1.0*Ret_Sco[5]/norm_len;                                         //maxsub
-	vector <double> distance;
-	vector <double> tmsco;
-	Calc_Global_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,distance,tmsco);
 
 	//-> check lali
 	if( Distance_Cutoff==0 &&  lali_out!=lali)
@@ -2071,8 +2372,23 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		}
 		else
 		{
-			Output_Detailed(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
-				blos_pos,cles_pos,seqid_pos,match_wei,distance,tmsco);
+			if(detail_full==0)
+			{
+				vector <double> distance;
+				vector <double> tmsco;
+				Calc_Global_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,distance,tmsco);
+				Output_Detailed(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
+					blos_pos,cles_pos,seqid_pos,match_wei,distance,tmsco);
+			}
+			else
+			{
+				vector <vector <string> > recname;
+				vector <vector <double> > distance;
+				vector <vector <double> > tmsco;
+				Calc_Global_Score_FULL(kabsch,TM_PDB1,TM_PDB2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,recname,distance,tmsco);
+				Output_Detailed_FULL(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
+					blos_pos,cles_pos,seqid_pos,match_wei,recname,distance,tmsco);
+			}
 			fclose(fp);
 		}
 	}
@@ -2226,13 +2542,13 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.08 [May-20-2016] \n");
+	fprintf(stderr,"DeepScore v1.10 [May-01-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepScore protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name] \n");
-	fprintf(stderr,"     [-d detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-C distance_cut]\n\n");
+	fprintf(stderr,"     [-d/D detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-C distance_cut]\n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2241,11 +2557,13 @@ void Usage(void)
 	fprintf(stderr,"-y range_2:             The residue range for the 2nd input protein, \n");
 	fprintf(stderr,"                        If not specified, all residues in the first chain will be used. See README for more details. \n\n");
 	fprintf(stderr,"-a alignment:           Specify an alignment in FASTA format from which to evaluate it. \n");
-	fprintf(stderr,"                        If not specified, the sequence alignment between the two input proteins will be used. \n\n");
+	fprintf(stderr,"                        If not specified, the sequence alignment between the two input proteins will be used. \n");
+	fprintf(stderr,"                        If set to -1, then will align the two proteins according to the residue number. \n\n");
 	fprintf(stderr,"-o out_name:            Specify an output file name for the evaluation. If not specified, \n");
 	fprintf(stderr,"                        screen output the evaluation scores. \n\n");
-	fprintf(stderr,"-d detail_file:         Specify an output file to show the detailed evaluation information, \n");
-	fprintf(stderr,"                        for each aligned position with SeqID, BLOSUM, CLESUM, DeepScore, RMSD, and TMscore.\n\n");
+	fprintf(stderr,"-d/D detail_file:       Specify an output file to show the detailed evaluation information, \n");
+	fprintf(stderr,"                        for each aligned position with SeqID, BLOSUM, CLESUM, DeepScore, RMSD, and TMscore.\n");
+	fprintf(stderr,"                        If use option -D, then will output the assessment of all heavy atoms. \n\n");
 	fprintf(stderr,"-s script_option:      [0], do not output script files. (Set as default)\n");
 	fprintf(stderr,"                        1,  output script for JMol, if -o is specified.\n");
 	fprintf(stderr,"                        2,  output script for RasMol, if -o is specified.\n");
@@ -2315,10 +2633,12 @@ int main(int argc,char **argv)
 		string name1="";
 		string name2="";
 		string ali_file="";
+		int ali_res=0;
 		string range1="_";
 		string range2="_";
 		string out_file="";
 		string detail_file="";
+		int detail_full=0;
 		int Out_Script=0; // no script out
 		int Out_Screen=1; // detailed screen out
 		int Normalize=0;
@@ -2329,7 +2649,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"t:q:o:O:d:s:a:x:y:P:n:C:"))!=EOF)
+			while((c=getopt(argc,argv,"t:q:o:O:d:D:s:a:x:y:P:n:C:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2348,6 +2668,11 @@ int main(int argc,char **argv)
 						break;
 					case 'd':
 						detail_file = optarg;
+						detail_full = 0;
+						break;
+					case 'D':
+						detail_file = optarg;
+						detail_full = 1;
 						break;
 					case 's':
 						Out_Script = atoi(optarg);;
@@ -2382,7 +2707,7 @@ int main(int argc,char **argv)
 		{
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"o:d:s:a:x:y:P:n:C:"))!=EOF)
+			while((c=getopt(argc,argv,"o:d:D:s:a:x:y:P:n:C:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2392,6 +2717,11 @@ int main(int argc,char **argv)
 						break;
 					case 'd':
 						detail_file = optarg;
+						detail_full = 0;
+						break;
+					case 'D':
+						detail_file = optarg;
+						detail_full = 1;
 						break;
 					case 's':
 						Out_Script = atoi(optarg);;
@@ -2444,10 +2774,15 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: script_option must be 0,1,2 or 3 \n");
 			exit(-1);
 		}
+		if(ali_file=="-1")
+		{
+			ali_file="";
+			ali_res=1;
+		}
 
 		//---- main process ----//
 		int SIMPLY_LOAD=0;
-		Main_Process(name1,range1,name2,range2,ali_file,out_file,detail_file,
+		Main_Process(name1,range1,name2,range2,ali_file,ali_res,out_file,detail_file,detail_full,
 			Out_Script,Normalize,Distance_Cutoff,Out_Screen,SIMPLY_LOAD);
 		exit(0);
 	}
