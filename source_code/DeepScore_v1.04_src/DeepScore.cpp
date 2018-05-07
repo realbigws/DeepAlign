@@ -21,6 +21,51 @@ Mol_Out mol_out;
 int Out_PDB;          //-> output PDB
 
 
+//--------- get min and max residue number from a given PDB file --------//
+int Extract_MinMax_ResNum(string &pdbfile, int &minres,int &maxres)
+{
+	ifstream fin;
+	string buf,temp;
+	//read
+	fin.open(pdbfile.c_str(), ios::in);
+	if(fin.fail()!=0)
+	{
+		fprintf(stderr,"pdbfile %s not found \n",pdbfile.c_str());
+		exit(-1);
+	}
+	int resnum;
+	minres=9999999;
+	maxres=-9999999;
+	int len;
+	string wstmp;
+	for(;;)
+	{
+		if(!getline(fin,buf,'\n'))break;
+		len=(int)buf.length();
+		if(len<3)continue;
+		//check ATOM
+		if(len<4)continue;
+		temp=buf.substr(0,4);
+		if(temp!="ATOM" && temp!="HETA")continue;
+		//check CA
+		temp=buf.substr(13,2);
+		if(temp!="CA")continue;
+		//extract resnum
+		temp=buf.substr(22,4);
+		resnum=atoi(temp.c_str());
+		if(resnum<minres)minres=resnum;
+		if(resnum>maxres)maxres=resnum;
+	}
+	//check
+	if(minres>maxres)
+	{
+		fprintf(stderr,"minres %d larger than maxres %d\n",minres,maxres);
+		exit(-1);
+	}
+	//return
+	return maxres-minres+1;
+}
+
 
 //--------- FASTA I/O ------------//
 //FASTA
@@ -1618,7 +1663,7 @@ void WS_Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue
 
 //-------------- output detailed -------------//
 //for each aligned position with BLOSUM CLESUM DeepScore RMSD TMscore.
-void Output_Detailed(FILE *fp,
+void Output_Detailed(FILE *fp,PDB_Residue *pdb1,PDB_Residue *pdb2,
 	string &nam1_content,string &nam2_content,
 	vector<pair<int, int> > &alignment,
 	vector <int> &ali1_seq_pdb,vector <int> &ali2_seq_pdb,
@@ -1643,7 +1688,14 @@ void Output_Detailed(FILE *fp,
 			}
 			else
 			{
-				fprintf(fp,"%c%c %1d %4d %4d %6.1f %6.2f %6.3f\n",nam1_content[ii-1],nam2_content[jj-1],
+				//-> get residue number
+				string res1="";
+				if(pdb1[ii-1].get_PDB_residue_number(res1)==0)res1=res1.substr(1,4);
+				string res2="";
+				if(pdb2[jj-1].get_PDB_residue_number(res2)==0)res2=res2.substr(1,4);
+				//-> output
+				fprintf(fp,"%c%c %4s %4s | %1d %4d %4d %6.1f | %6.2f %6.3f\n",
+					nam1_content[ii-1],nam2_content[jj-1],res1.c_str(),res2.c_str(),
 					seqid_pos[rel_lali],blos_pos[rel_lali],cles_pos[rel_lali],match_wei[rel_lali],
 					distance[rel_lali],tmsco[rel_lali]);
 				rel_lali++;
@@ -1664,7 +1716,7 @@ void Output_Detailed(FILE *fp,
 }
 
 //-> Full version
-void Output_Detailed_FULL(FILE *fp,
+void Output_Detailed_FULL(FILE *fp,PDB_Residue *pdb1,PDB_Residue *pdb2,
 	string &nam1_content,string &nam2_content,
 	vector<pair<int, int> > &alignment,
 	vector <int> &ali1_seq_pdb,vector <int> &ali2_seq_pdb,
@@ -1695,8 +1747,14 @@ void Output_Detailed_FULL(FILE *fp,
 				int num=(int)recname[rel_lali].size();
 				for(int k=0;k<num;k++)
 				{
-					fprintf(fp,"%c%c %4s %1d %4d %4d %6.1f %6.2f %6.3f\n",
-						nam1_content[ii-1],nam2_content[jj-1],recname[rel_lali][k].c_str(),
+					//-> get residue number
+					string res1="";
+					if(pdb1[ii-1].get_PDB_residue_number(res1)==0)res1=res1.substr(1,4);
+					string res2="";
+					if(pdb2[jj-1].get_PDB_residue_number(res2)==0)res2=res2.substr(1,4);
+					//-> output
+					fprintf(fp,"%c%c %4s %4s %4s | %1d %4d %4d %6.1f | %6.2f %6.3f\n",
+						nam1_content[ii-1],nam2_content[jj-1],recname[rel_lali][k].c_str(),res1.c_str(),res2.c_str(),
 						seqid_pos[rel_lali],blos_pos[rel_lali],cles_pos[rel_lali],match_wei[rel_lali],
 						distance[rel_lali][k],tmsco[rel_lali][k]);
 				}
@@ -2015,6 +2073,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	//data structure
 	Confo_Lett confo_lett;
 	XYZ *TM_MOL1;
+	XYZ *TM_MOL_TMP;
 	XYZ *TM_MOL2;
 	XYZ *TM_MCB1;
 	XYZ *TM_MCB2;
@@ -2047,12 +2106,15 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	getBaseName(file1,nam1,'/','.');
 	getBaseName(file2,nam2,'/','.');
 	//-> create data
+	//--| mol1
 	TM_MOL1=new XYZ[TM_MOLN1];
+	TM_MOL_TMP=new XYZ[TM_MOLN1];
 	TM_MCB1=new XYZ[TM_MOLN1];
 	TM_PDB1=new PDB_Residue[TM_MOLN1];
 	TM_PDB_TMP=new PDB_Residue[TM_MOLN1];
 	TM_AMI1=new char[TM_MOLN1+1];
 	TM_CLE1=new char[TM_MOLN1+1];
+	//--| mol2
 	TM_MOL2=new XYZ[TM_MOLN2];
 	TM_MCB2=new XYZ[TM_MOLN2];
 	TM_PDB2=new PDB_Residue[TM_MOLN2];
@@ -2186,7 +2248,11 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	int norm_len=TM_MOLN2; //normal, using the second to normalize
 	double norm_d0=tm_align.d0;
 	{
-		if(Normalize==-2)norm_len=TM_MOLN2;
+		//----- Jinbo_Case -----//
+		int minres,maxres;
+		if(Normalize==-4)norm_len=Extract_MinMax_ResNum(file2,minres,maxres);
+		else if(Normalize==-3)norm_len=Extract_MinMax_ResNum(file1,minres,maxres);
+		else if(Normalize==-2)norm_len=TM_MOLN2;
 		else if(Normalize==-1)norm_len=TM_MOLN1;
 		else if(Normalize==0)norm_len=min(TM_MOLN1,TM_MOLN2);
 		else if(Normalize>0)norm_len=Normalize;
@@ -2244,7 +2310,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		//FASTA_Output_Simp(fp,nam1,nam2,TM_CLE1,TM_CLE2,alignment_out);
 		//fclose(fp);
 		//[3]pdb_out
-		kabsch.rot_mol(TM_MOL1,TM_MOL1,TM_MOLN1,TM_ROTMAT);
+		kabsch.rot_mol(TM_MOL1,TM_MOL_TMP,TM_MOLN1,TM_ROTMAT);
 		sprintf(www_nam,"%s.pdb",outnam.c_str());
 		fp=fopen(www_nam,"wb");
 		if(fp==0)
@@ -2283,7 +2349,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 			}
 			else                //-> output CA_Only PDB
 			{
-				mol_out.Output_PDB(fp,TM_MOLN1,TM_MOL1,TM_AMI1,0,'A');
+				mol_out.Output_PDB(fp,TM_MOLN1,TM_MOL_TMP,TM_AMI1,0,'A');
 				fprintf(fp,"%s\n",TER.c_str());
 				mol_out.Output_PDB(fp,TM_MOLN2,TM_MOL2,TM_AMI2,0,'B');
 				fprintf(fp,"%s\n",TER.c_str());
@@ -2300,7 +2366,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		}
 		else
 		{
-			FASTA_Output_More(ws_output_tot,nam1,nam2,TM_AMI1,TM_AMI2,TM_CLE1,TM_CLE2,TM_MOL1,TM_MOL2,norm_d0,alignment_out,0);
+			FASTA_Output_More(ws_output_tot,nam1,nam2,TM_AMI1,TM_AMI2,TM_CLE1,TM_CLE2,TM_MOL_TMP,TM_MOL2,norm_d0,alignment_out,0);
 			fprintf(fp,"%s",ws_output_tot.c_str());
 			fclose(fp);
 		}
@@ -2358,8 +2424,8 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	}
 	else
 	{
-		kabsch.rot_mol(TM_MOL1,TM_MOL1,TM_MOLN1,TM_ROTMAT);
-		FASTA_Output_More(ws_output_tot,nam1,nam2,TM_AMI1,TM_AMI2,TM_CLE1,TM_CLE2,TM_MOL1,TM_MOL2,norm_d0,alignment_out,0);
+		kabsch.rot_mol(TM_MOL1,TM_MOL_TMP,TM_MOLN1,TM_ROTMAT);
+		FASTA_Output_More(ws_output_tot,nam1,nam2,TM_AMI1,TM_AMI2,TM_CLE1,TM_CLE2,TM_MOL_TMP,TM_MOL2,norm_d0,alignment_out,0);
 	}
 
 	//output detailed score for each aligned position
@@ -2377,7 +2443,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 				vector <double> distance;
 				vector <double> tmsco;
 				Calc_Global_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,distance,tmsco);
-				Output_Detailed(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
+				Output_Detailed(fp,TM_PDB1,TM_PDB2,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
 					blos_pos,cles_pos,seqid_pos,match_wei,distance,tmsco);
 			}
 			else
@@ -2386,7 +2452,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 				vector <vector <double> > distance;
 				vector <vector <double> > tmsco;
 				Calc_Global_Score_FULL(kabsch,TM_PDB1,TM_PDB2,TM_MOLN1,TM_MOLN2,TM_ROTMAT,ali2,norm_d0,recname,distance,tmsco);
-				Output_Detailed_FULL(fp,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
+				Output_Detailed_FULL(fp,TM_PDB1,TM_PDB2,nam1_con,nam2_con,alignment,ali1_seq_pdb,ali2_seq_pdb,
 					blos_pos,cles_pos,seqid_pos,match_wei,recname,distance,tmsco);
 			}
 			fclose(fp);
@@ -2542,7 +2608,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.10 [May-01-2018] \n");
+	fprintf(stderr,"DeepScore v1.11 [May-05-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
@@ -2572,8 +2638,8 @@ void Usage(void)
 	fprintf(stderr,"                       [1], detailed screenout evaluation scores. (Set as default) \n\n");
 	fprintf(stderr,"-n normalize_len:       Specify a normalization length for the calculation of TMscore,MAXSUB,GDT_TS/HA. In particular,\n");
 	fprintf(stderr,"                       [0], the minimal length of the 1st and 2nd input protein. (Set as default)\n");
-	fprintf(stderr,"                       -1,  the length of the first input protein. \n");
-	fprintf(stderr,"                       -2,  the length of the second input protein. \n\n");
+	fprintf(stderr,"                       -1,  the length of the 1st input protein; -3, (max_resnum-min_resnum+1) of the 1st model. \n");
+	fprintf(stderr,"                       -2,  the length of the 2nd input protein; -4, (max_resnum-min_resnum+1) of the 2nd model. \n\n");
 	fprintf(stderr,"-C distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
 	fprintf(stderr,"                       [0], keep all residue pairs. (Set as default) \n");
 	fprintf(stderr,"                       -1,  automatically assign a distance cutoff value according to d0 in TMscore \n\n");
@@ -2764,9 +2830,9 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: FILE2 NAME NULL \n");
 			exit(-1);
 		}
-		if(Normalize<-2)
+		if(Normalize<-4)
 		{
-			fprintf(stderr,"ERROR: normal_len must be interger >= -2 \n");
+			fprintf(stderr,"ERROR: normal_len must be interger >= -4 \n");
 			exit(-1);
 		}
 		if(Out_Script<0 || Out_Script>3)

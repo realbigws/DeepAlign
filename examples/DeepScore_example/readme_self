@@ -1,0 +1,4 @@
+#-> 1. align two models with missing residues according to their residue numbers
+./DeepScore T0949-HHP-m01-1cuo_A.pdb T0949-HHP-m60-4knu_A.pdb -a -1 -d detail -n -3
+
+
