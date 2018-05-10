@@ -2381,7 +2381,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		else
 		{
 			fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff uGDT\n");
-			fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
+			fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.3f\n",
 				nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out,norm_len,Distance_Cutoff,ugdt);
 			fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 			fprintf(fp," %9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
@@ -2472,7 +2472,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	string out_str="";
 	if(Out_Screen==0)  //simplest screen-out
 	{
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.3f\n",
 			nam1.c_str(),nam2.c_str(),TM_MOLN1,TM_MOLN2,blos_out,cles_out,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid_out,norm_len,Distance_Cutoff,ugdt);
 		out_str=ws_command;
 	}
@@ -2506,7 +2506,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA uGDT\n");
 		fin_tmp_str+=ws_command;
-		sprintf(ws_command,"  %6d %6d %9.2f %5d %4d %7.3f %7.3f %6.3f %6.3f %6.3f %.2f\n",
+		sprintf(ws_command,"  %6d %6d %9.2f %5d %4d %7.3f %7.3f %6.3f %6.3f %6.3f %.3f\n",
 			blos_out,cles_out,wms,seqid_out,lali,rms,tms,maxsub,gdt1,gdt2,ugdt);
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"#----- Please see http://raptorx.uchicago.edu/DeepAlign/documentation/ for explanation of these scores \n\n");
