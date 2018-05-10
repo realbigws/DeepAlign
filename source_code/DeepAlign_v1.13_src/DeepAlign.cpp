@@ -1550,8 +1550,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		char ws_command[30000];
 		double zerod=0;
 		int zeroi=0;
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
-			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,zeroi,zeroi,zerod,zeroi,zerod,zerod,zerod,zerod,zerod,zeroi,norm_len,Distance_Cutoff);
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
+			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,zeroi,zeroi,zerod,zeroi,zerod,zerod,zerod,zerod,zerod,zeroi,norm_len,Distance_Cutoff,zerod);
 		out_str=ws_command;
 		ret_val=zerod;
 		return 0;
@@ -1566,8 +1566,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	int fin_blosum=0;
 	int fin_clesum=0;
 	int fin_seqid=0;
-	double fin_tms,fin_rms,fin_wms,fin_gdt,fin_gdtha,fin_maxsub;
-	fin_tms=fin_rms=fin_wms=fin_gdt=fin_gdtha=fin_maxsub=0;
+	double fin_tms,fin_rms,fin_wms,fin_gdt,fin_gdtha,fin_maxsub,fin_ugdt;
+	fin_tms=fin_rms=fin_wms=fin_gdt=fin_gdtha=fin_maxsub=fin_ugdt=0;
 	string final_record="";
 	if(Out_More>=0)
 	{
@@ -1583,7 +1583,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		int seqid;
 		int blosum,clesum;
 		double tms,wms,rms;
-		double gdt1,gdt2,maxsub;
+		double gdt1,gdt2,maxsub,ugdt;
 		vector <double> match_wei;
 		vector <double> rmsd_out;
 		//--------- single solution -----------//
@@ -1717,6 +1717,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		wms=clepaps.TM_Align_Get_Score_Simp_MatchWei(TM_MOL1,TM_MOL2,TM_ROTMAT,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,match_wei); //DeepAlign-score
 		gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
 		gdt2=1.0*(Ret_Sco[0]+Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3])/(4.0*norm_len);  //ha_GDT
+		ugdt=0.25*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4]);                //uGDT
 		maxsub=1.0*Ret_Sco[5]/norm_len;                                         //maxsub
 		if(Out_More>=1)
 		{
@@ -1729,9 +1730,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 			}
 			else
 			{
-				fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff\n");
-				fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
-					wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff);
+				fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff uGDT\n");
+				fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
+					wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff,ugdt);
 				fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 				fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
 				fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[3],TM_ROTMAT[4],TM_ROTMAT[5],TM_ROTMAT[10]);
@@ -1745,6 +1746,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		fin_wms=wms;
 		fin_gdt=gdt1;
 		fin_gdtha=gdt2;
+		fin_ugdt=ugdt;
 		fin_maxsub=maxsub;
 		fin_lali=lali;
 		fin_blosum=blosum;
@@ -1767,6 +1769,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				tms=clepaps.TM_Align_TM_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,norm_len,norm_d0,rms,lali,Ret_Sco);  //tm-score
 				gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
 				gdt2=1.0*(Ret_Sco[0]+Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3])/(4.0*norm_len);  //ha_GDT
+				ugdt=0.25*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4]);                //uGDT
 				maxsub=1.0*Ret_Sco[5]/norm_len;
 //				if(tms < 0.8*fin_tms || gdt1 < 0.8*fin_gdt)  // we use 0.8 cutoff here !!
 //				{
@@ -1899,6 +1902,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				wms=clepaps.TM_Align_Get_Score_Simp_MatchWei(TM_MOL1,TM_MOL2,TM_ROTMAT,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,match_wei); //DeepAlign-score
 				gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
 				gdt2=1.0*(Ret_Sco[0]+Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3])/(4.0*norm_len);  //ha_GDT
+				ugdt=0.25*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4]);                //uGDT
 				maxsub=1.0*Ret_Sco[5]/norm_len;
 				sprintf(www_nam,"%s/%s.%c.score",output_root.c_str(),name.c_str(),wsk+'0');
 				fp=fopen(www_nam,"wb");
@@ -1908,9 +1912,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				}
 				else
 				{
-					fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff\n");
-					fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f \n",
-						wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff);
+					fprintf(fp,"#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff uGDT\n");
+					fprintf(fp," %s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
+						wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,blosum,clesum,wms,lali,rms,tms,maxsub,gdt1,gdt2,seqid,norm_len,Distance_Cutoff,ugdt);
 					fprintf(fp,"#---------------- transformation to superpose 1st structure onto the 2nd ------------------------\n");
 					fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[0],TM_ROTMAT[1],TM_ROTMAT[2],TM_ROTMAT[9]);
 					fprintf(fp,"%9.6f %9.6f %9.6f %12.6f\n",TM_ROTMAT[3],TM_ROTMAT[4],TM_ROTMAT[5],TM_ROTMAT[10]);
@@ -1930,9 +1934,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	char ws_command[300000];
 	if(Out_Screen==0)  //simplest screen-out
 	{
-		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f\n",
+		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.2f\n",
 			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,fin_blosum,fin_clesum,fin_wms,fin_lali,fin_rms,
-			fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_seqid,norm_len,Distance_Cutoff);
+			fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_seqid,norm_len,Distance_Cutoff,fin_ugdt);
 		out_str=ws_command;
 	}
 	else //-> screen out new
@@ -1965,8 +1969,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA\n");
 		fin_tmp_str+=ws_command;
-		sprintf(ws_command,"  %6d %6d %9.2f %5d %4d %7.3f %7.3f %6.3f %6.3f %6.3f\n",
-			fin_blosum,fin_clesum,fin_wms,fin_seqid,fin_lali,fin_rms,fin_tms,fin_maxsub,fin_gdt,fin_gdtha);
+		sprintf(ws_command,"  %6d %6d %9.2f %5d %4d %7.3f %7.3f %6.3f %6.3f %6.3f %.2f\n",
+			fin_blosum,fin_clesum,fin_wms,fin_seqid,fin_lali,fin_rms,fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_ugdt);
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"#----- Please see http://raptorx.uchicago.edu/DeepAlign/documentation/ for explanation of these scores \n\n");
 		fin_tmp_str+=ws_command;
