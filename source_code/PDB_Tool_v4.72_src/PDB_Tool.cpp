@@ -1,3 +1,6 @@
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 #include "PDB_Chain_Fold.h"
 #include "Confo_Back.h"
 #include "Confo_Beta.h"
@@ -14,7 +17,7 @@ using namespace std;
 void print_help_msg(void) 
 {
 	cout << "========================================================|" << endl;
-	cout << "PDB_Tool  (version 4.75) [2016.02.25]                   |" << endl;
+	cout << "PDB_Tool  (version 4.80) [2018.05.20]                   |" << endl;
 	cout << "          a versatile tool to process PDB file          |" << endl;
 	cout << "Usage:   ./PDB_Tool <-i input> <-r range> <-o output>   |" << endl;
 	cout << "Or,      ./PDB_Tool <-i inroot> <-L list> <-o outroot>  |" << endl;
@@ -50,6 +53,8 @@ void print_help_msg(void)
 	cout << "        -R 1 to reconstruct missing CB and backbone     |" << endl;
 	cout << "        -F 1 for AMI,CLE,SSE; 2 for ACC; 4 for FEAT     |" << endl;
 	cout << "           these output files could be combined         |" << endl;
+	cout << "           8 for output phi/psi/omega and theta/thor    |" << endl;
+	cout << "           9 for output Ca-Ca, Cb-Cb, and hb_value      |" << endl;
 	cout << "The following arguments only for <-L list> input type   |" << endl;
 	cout << "        -G 1 to output three log files                  |" << endl;
 	cout << "========================================================|" << endl;
@@ -465,6 +470,169 @@ void Output_Protein_Features(
 }
 
 
+
+//----- output protein angles -----//
+//-> output format
+/*
+>POS  PHI  PSI  OMEGA  THETA  THOR
+....
+
+*/
+void Output_Protein_Angles(
+	string &outroot,string &outname,
+	int moln,PDB_Residue *pdb,char *ami)
+{
+	//init
+	int i;
+	int retv;
+	PDB_Chain_Fold chain_fold;
+	chain_fold.initialize_simple(moln,' ');
+	for(i=0;i<moln;i++)chain_fold.set_residue(i,pdb[i]);
+	//calculate phi_psi_omega
+	if(chain_fold.calculate_phi_psi_omega()!=0)
+	{
+		fprintf(stderr,"phi_psi_omega calculation cailed \n");
+		exit(-1);
+	}
+	//calculate theta_tor
+	if(chain_fold.calculate_theta_tau()!=0)
+	{
+		fprintf(stderr,"theta_tau calculation cailed \n");
+		exit(-1);
+	}
+	//output phi_psi_omega
+	vector <vector <double> > phi_psi_omega_out;
+	chain_fold.print_phi_psi_omega(phi_psi_omega_out);
+	//output theta_tor
+	vector <vector <double> > theta_tor_out;
+	chain_fold.print_theta_tau(theta_tor_out);
+
+	//------ output feature files -------//
+	string file=outroot+"/"+outname+".angles";
+	FILE *fpp=fopen(file.c_str(),"wb");
+	if(fpp==0)
+	{
+		fprintf(stderr,"ERROR: file %s can't be opened. \n",file.c_str());
+	}
+	else
+	{
+		fprintf(fpp,">POS Res  PHI        PSI       OMEGA     THETA       THOR  \n");
+		for(int i=0;i<moln;i++)
+		{
+			//print
+			stringstream os;
+			os<<setw(4)<<i + 1<<" ";
+			os<<setw(1)<<ami[i]<<" ";
+			os<<setw(10)<<phi_psi_omega_out.at(i).at(0) / M_PI * 180<<" ";
+			os<<setw(10)<<phi_psi_omega_out.at(i).at(1) / M_PI * 180<<" ";
+			os<<setw(10)<<phi_psi_omega_out.at(i).at(2) / M_PI * 180<<" ";
+			os<<setw(10)<<theta_tor_out.at(i).at(0) / M_PI * 180<<" ";
+			os<<setw(10)<<theta_tor_out.at(i).at(1) / M_PI * 180<<" ";
+			//out
+			string buf=os.str();
+			fprintf(fpp,"%s\n",buf.c_str());
+		}
+	}
+	fclose(fpp);
+}
+
+
+//---------- output Jinbo'style distance matrix ------------//__180520__//
+//-> example (in Hai-cang format) [starting from 1] [no gap]
+// CaCaMatrix = np.ones( (fullSeqLen, fullSeqLen), np.float16) * (-1)
+// CbCbMatrix = np.ones( (fullSeqLen, fullSeqLen), np.float16) * (-1)
+// CgCgMatrix = np.ones( (fullSeqLen, fullSeqLen), np.float16) * (-1)  -> not consider now
+// CaCgMatrix = np.ones( (fullSeqLen, fullSeqLen), np.float16) * (-1)  -> not consider now
+// NOMatrix   = np.ones( (fullSeqLen, fullSeqLen), np.float16) * (-1)
+/*
+i j <Ca-Ca> <Cb-Cb> <hydro_val>
+......
+
+[legend]:
+
+the first and second column is the two positions in 1-base (i.e., starting from 1).
+the third column is the Ca-Ca distance. (-1 means not available)
+the fourth column is the Cb-Cb distance. (-1 means not available)
+the fifth column is the hydro_bond value. (-1 means not available)
+
+#----------- equation of hydro_bond value ----------------#
+#-> in the order of N,Ca,C,O,H
+double Hydro_Bond::HB_Calc_Single(XYZ **HB_mol,int i,int j)
+{
+        double dho,dhc,dnc,dno;
+        dho=HB_mol[i][4].distance(HB_mol[j][3]);
+        dhc=HB_mol[i][4].distance(HB_mol[j][2]);
+        dno=HB_mol[i][0].distance(HB_mol[j][3]);
+        dnc=HB_mol[i][0].distance(HB_mol[j][2]);
+        return (332.0*0.42*0.2*(1.0/dno+1.0/dhc-1.0/dho-1.0/dnc));
+}
+
+*/
+
+void Output_Protein_Distances(
+	string &outroot,string &outname,Hydro_Bond *hydro_bond,
+	int moln,PDB_Residue *pdb,XYZ **mcc, int *mcc_side,char *ami)
+{
+	//init
+	int i,j;
+	//calc hydro_bond
+	for(i=0;i<moln;i++)pdb[i].get_XYZ_array(mcc[i],mcc_side[i]);
+	vector <vector <double> > hb_mat;
+	hydro_bond->HB_Input_Mol(mcc,ami,moln);
+	hydro_bond->HB_Calc_Hydro_Bond(hb_mat);
+
+	//------ output feature files -------//
+	string file=outroot+"/"+outname+".distances";
+	FILE *fpp=fopen(file.c_str(),"wb");
+	if(fpp==0)
+	{
+		fprintf(stderr,"ERROR: file %s can't be opened. \n",file.c_str());
+	}
+	else
+	{
+		fprintf(fpp,">PS1  PS2 A A   CA_CA      CB_CB      HB_val      \n");
+		for(i=0;i<moln;i++)
+			for(j=0;j<moln;j++)
+			{
+				//get atoms
+				XYZ ca_i,ca_j;
+				pdb[i].get_backbone_atom( "CA ",ca_i );
+				pdb[j].get_backbone_atom( "CA ",ca_j );
+				XYZ cb_i,cb_j;
+				pdb[i].get_sidechain_atom( "CB ",cb_i );
+				pdb[j].get_sidechain_atom( "CB ",cb_j );
+				//get distance
+				double distance;
+				vector <double> distances;
+				//-> Ca-Ca distance (symmetric)
+				distance=ca_i.distance(ca_j);
+				distances.push_back(distance);
+				//-> Cb-Cb distance (symmetric)
+				distance=cb_i.distance(cb_j);
+				distances.push_back(distance);
+				//-> HB value
+				double hb_val=hb_mat[i][j];
+				//print
+				stringstream os;
+				os<<setw(4)<<i + 1<<" ";
+				os<<setw(4)<<j + 1<<" ";
+				os<<setw(1)<<ami[i]<<" ";
+				os<<setw(1)<<ami[j]<<" ";
+				os<<setw(10)<<distances.at(0)<<" ";
+				os<<setw(10)<<distances.at(1)<<" ";
+				os<<setw(10)<<hb_val<<" ";
+				//out
+				string buf=os.str();
+				fprintf(fpp,"%s\n",buf.c_str());
+			}
+	}
+	fclose(fpp);
+}
+
+
+
+
+
 //==================== PDB_Back_Process ===============// (process list)
 //[list_style]
 //first_line: input_dir
@@ -483,6 +651,7 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	Confo_Beta *confo_beta=new Confo_Beta(totlen);
 	Confo_Back *confo_back=new Confo_Back(totlen);
 	Acc_Surface *acc_surface=new Acc_Surface(totlen);
+	Hydro_Bond *hydro_bond=new Hydro_Bond(totlen);
 	//init
 	ifstream fin;
 	string buf;
@@ -643,6 +812,7 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 				delete confo_beta;
 				delete confo_back;
 				delete acc_surface;
+				delete hydro_bond;
 				//create
 				pdb=new PDB_Residue[totlen];
 				mol=new XYZ[totlen];
@@ -656,6 +826,7 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 				confo_beta=new Confo_Beta(totlen);
 				confo_back=new Confo_Back(totlen);
 				acc_surface=new Acc_Surface(totlen);
+				hydro_bond=new Hydro_Bond(totlen);
 				//memory limit
 				mol_input.MEMORY_LIMIT=totlen;
 			}
@@ -770,12 +941,20 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 			//output others
 			if(OutFifi!=0)
 			{
+				//-> basic output
 				if(OutFifi==1 || OutFifi==3 || OutFifi==5 || OutFifi==7)
 					Output_Protein_Features_AMI_SSE_CLE(outa,output,moln,pdb);
 				if(OutFifi==2 || OutFifi==3 || OutFifi==6 || OutFifi==7)
 					Output_Protein_Features_ACC(outa,output,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
 				if(OutFifi==4 || OutFifi==5 || OutFifi==6 || OutFifi==7)
 					Output_Protein_Features(outa,output,acc_surface,mol,mcb,moln,pdb,mcc,mcc_side,ami,acc);
+				//-> additionals
+				//--| angles
+				if(OutFifi==8)
+					Output_Protein_Angles(outa,output,moln,pdb,ami);
+				//--| distances
+				if(OutFifi==9)
+					Output_Protein_Distances(outa,output,hydro_bond,moln,pdb,mcc,mcc_side,ami);
 			}
 		}
 
@@ -795,6 +974,7 @@ int PDB_Back_Process(string &input_dir,string &list,string &output_dir,
 	delete confo_beta;
 	delete confo_back;
 	delete acc_surface;
+	delete hydro_bond;
 	fin.close();
 	fin.clear();
 	return wwscount;
@@ -820,6 +1000,7 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 	Confo_Beta *confo_beta=new Confo_Beta(totlen);
 	Confo_Back *confo_back=new Confo_Back(totlen);
 	Acc_Surface *acc_surface=new Acc_Surface(totlen);
+	Hydro_Bond *hydro_bond=new Hydro_Bond(totlen);
 	mol_input.MODRES=1;
 	//init
 	int moln;
@@ -878,6 +1059,7 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				delete confo_beta;
 				delete confo_back;
 				delete acc_surface;
+				delete hydro_bond;
 				//create
 				pdb=new PDB_Residue[totlen];
 				mol=new XYZ[totlen];
@@ -891,6 +1073,7 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				confo_beta=new Confo_Beta(totlen);
 				confo_back=new Confo_Back(totlen);
 				acc_surface=new Acc_Surface(totlen);
+				hydro_bond=new Hydro_Bond(totlen);
 				//memory limit
 				mol_input.MEMORY_LIMIT=totlen;
 			}
@@ -991,13 +1174,20 @@ void PDB_Back_Process_Single(string &input,string &range,string &output,
 				string outroot,outname;
 				getBaseName(output,outname,'/','.');
 				getRootName(output,outroot,'/');
-				//-> output files
+				//-> basic output
 				if(OutFifi==1 || OutFifi==3 || OutFifi==5 || OutFifi==7)
 					Output_Protein_Features_AMI_SSE_CLE(outroot,outname,moln,pdb);
 				if(OutFifi==2 || OutFifi==3 || OutFifi==6 || OutFifi==7)
 					Output_Protein_Features_ACC(outroot,outname,acc_surface,moln,pdb,mcc,mcc_side,ami,acc);
 				if(OutFifi==4 || OutFifi==5 || OutFifi==6 || OutFifi==7)
 					Output_Protein_Features(outroot,outname,acc_surface,mol,mcb,moln,pdb,mcc,mcc_side,ami,acc);
+				//-> additionals
+				//--| angles
+				if(OutFifi==8)
+					Output_Protein_Angles(outroot,outname,moln,pdb,ami);
+				//--| distances
+				if(OutFifi==9)
+					Output_Protein_Distances(outroot,outname,hydro_bond,moln,pdb,mcc,mcc_side,ami);
 			}
 		}
 	}
@@ -1015,6 +1205,7 @@ end:
 	delete confo_beta;
 	delete confo_back;
 	delete acc_surface;
+	delete hydro_bond;
 }
 
 //============== main ===============//
