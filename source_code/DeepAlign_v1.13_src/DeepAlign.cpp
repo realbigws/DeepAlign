@@ -1537,6 +1537,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 			}
 		}
 		//refine alignment
+		clepaps.CLEPAPS_Input(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2);
 		ws_ret=clepaps.FM_Align_WithAli(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,norm_len,norm_d0);  //align version
 	}
 	
