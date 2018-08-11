@@ -2068,7 +2068,7 @@ void Output_PyMol_Script(FILE *fws,int *AFP_Cor)
 //============== main process =============//
 void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	string &ali_file,int &ali_res,string &out_file,string &detail_file,int &detail_full,
-	int Out_Script,int Normalize,double Distance_Cutoff,int Out_Screen,int SIMPLY_LOAD)
+	int Out_Script,int Normalize,double Distance_Cutoff,int Out_Screen,int SIMPLY_LOAD,int TM_type)
 {
 	//data structure
 	Confo_Lett confo_lett;
@@ -2266,9 +2266,16 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	//-> calculate global score
 	int lali;
 	double rms;
+	double tms;
 	double Ret_Sco[8];
 	double TM_ROTMAT[12];
-	double tms=tm_align.TM_Align_TM_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,ali2,norm_len,norm_d0,rms,lali,Ret_Sco);  //tm-score
+	//different types of TMscore calculation
+	if(TM_type==1) //typical type
+		tms=tm_align.TM_Align_TM_Score(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,ali2,norm_len,norm_d0,rms,lali,Ret_Sco);  //tm-score (typical)
+	else if(TM_type==2) //simplified type
+		tms=tm_align.TM_Align_TM_Score_Simp(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,ali2,norm_len,norm_d0,rms,lali,Ret_Sco);  //tm-score (simplified)
+	else
+		tms=tm_align.TM_Align_TM_Score_Simplest(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,ali2,norm_len,norm_d0,rms,lali,Ret_Sco);  //tm-score (direct superimpose)
 	for(int i=0;i<12;i++)TM_ROTMAT[i]=tm_align.finmat[i];
 	double wms=tm_align.TM_Align_Get_Score_Simp_MatchWei(TM_MOL1,TM_MOL2,TM_ROTMAT,TM_MOLN1,TM_MOLN2,ali2,match_wei); //DeepAlign-score
 	double gdt1=1.0*(Ret_Sco[1]+Ret_Sco[2]+Ret_Sco[3]+Ret_Sco[4])/(4.0*norm_len);  //ori_GDT
@@ -2609,13 +2616,13 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepScore v1.11 [May-05-2018] \n");
+	fprintf(stderr,"DeepScore v1.12 [Aug-11-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepScore protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name] \n");
-	fprintf(stderr,"     [-d/D detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-C distance_cut]\n\n");
+	fprintf(stderr,"     [-d/D detail_file] [-s script_option] [-P screenout] [-n normalize_len] [-C distance_cut] [-T tm_type] \n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2644,6 +2651,10 @@ void Usage(void)
 	fprintf(stderr,"-C distance_cut:        Specify a distance cutoff to remove residue pairs whose distance exceeds the threshold. \n");
 	fprintf(stderr,"                       [0], keep all residue pairs. (Set as default) \n");
 	fprintf(stderr,"                       -1,  automatically assign a distance cutoff value according to d0 in TMscore \n\n");
+	fprintf(stderr,"-T tm_type:             Specify the type of TMscore calculation. \n");
+	fprintf(stderr,"                        0,  use the alignment directly to superimpose the input structures. \n");
+	fprintf(stderr,"                       [1], use typical approach to calculate the TMscore. (Set as default) \n");
+	fprintf(stderr,"                        2,  use simplifed approach to calculate the TMscore. \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
 	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
 
@@ -2710,13 +2721,14 @@ int main(int argc,char **argv)
 		int Out_Screen=1; // detailed screen out
 		int Normalize=0;
 		double Distance_Cutoff=0;
+		int TM_type=1;
 
 		//---- process argument ----//
 		extern char* optarg;
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"t:q:o:O:d:D:s:a:x:y:P:n:C:"))!=EOF)
+			while((c=getopt(argc,argv,"t:q:o:O:d:D:s:a:x:y:P:n:C:T:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2762,6 +2774,9 @@ int main(int argc,char **argv)
 					case 'C':
 						Distance_Cutoff = atof(optarg);
 						break;
+					case 'T':
+						TM_type = atoi(optarg);
+						break;
 
 					//----- default ----//
 					default:
@@ -2774,7 +2789,7 @@ int main(int argc,char **argv)
 		{
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"o:d:D:s:a:x:y:P:n:C:"))!=EOF)
+			while((c=getopt(argc,argv,"o:d:D:s:a:x:y:P:n:C:T:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2810,6 +2825,9 @@ int main(int argc,char **argv)
 						break;
 					case 'C':
 						Distance_Cutoff = atof(optarg);
+						break;
+					case 'T':
+						TM_type = atoi(optarg);
 						break;
 
 					//----- default ----//
@@ -2850,7 +2868,7 @@ int main(int argc,char **argv)
 		//---- main process ----//
 		int SIMPLY_LOAD=0;
 		Main_Process(name1,range1,name2,range2,ali_file,ali_res,out_file,detail_file,detail_full,
-			Out_Script,Normalize,Distance_Cutoff,Out_Screen,SIMPLY_LOAD);
+			Out_Script,Normalize,Distance_Cutoff,Out_Screen,SIMPLY_LOAD,TM_type);
 		exit(0);
 	}
 }
