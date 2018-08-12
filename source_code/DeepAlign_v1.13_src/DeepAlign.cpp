@@ -2426,6 +2426,35 @@ int Return_Max_Length(string &list,string &root)
 	return maxlen;
 }
 
+//-------------- read region mask file -----------------//
+//-> example:   1111111111122222222222222
+int Read_Region_Mask(string &in, vector <int> &out)
+{
+	//read
+	ifstream fin;
+	string buf,temp;
+	fin.open(in.c_str(), ios::in);
+	if(fin.fail()!=0)
+	{
+		fprintf(stderr,"in file %s not found!!\n",in.c_str());
+		exit(-1);
+	}
+	//process
+	out.clear();
+	if(!getline(fin,buf,'\n'))
+	{
+		fprintf(stderr,"in file %s format bad!!\n",in.c_str());
+		exit(-1);
+	}
+	//calc
+	out.resize(buf.length());
+	for(int i=0;i<(int)buf.length();i++)out[i]=buf[i]-'0';
+	//return
+	return buf.length();
+}
+
+
+
 
 
 //------- usage ------//
@@ -2478,14 +2507,15 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.2 [May-20-2016] \n");
+	fprintf(stderr,"DeepAlign v1.3 [Aug-11-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
 	fprintf(stderr,"Usage: \n");
 	fprintf(stderr,"./DeepAlign protein_1 protein_2 [-x range_1] [-y range_2] [-a alignment] [-o out_name]\n");
 	fprintf(stderr,"                                [-p out_option] [-u quality] [-P screenout] [-n normalize_len] \n");
-	fprintf(stderr,"                                [-s score_func] [-C distance_cut] [-M multi_cut] \n\n");
+	fprintf(stderr,"                                [-s score_func] [-C distance_cut] [-M multi_cut] \n");
+	fprintf(stderr,"                                [-A mask_1] [-B mask_2] \n\n");
 	fprintf(stderr,"Required input: \n");
 	fprintf(stderr," protein_1:             The 1st input protein file in PDB format. \n");
 	fprintf(stderr," protein_2:             The 2nd input protein file in PDB format. \n\n");
@@ -2514,6 +2544,8 @@ void Usage(void)
 	fprintf(stderr,"                       [-1],automatically assign a distance cutoff value according to d0 in TMscore. (Set as default) \n\n");
 	fprintf(stderr,"-M multi_cut:           if multiple solution is specified, set a TMscore cutoff for minimal quality of the solution/ \n");
 	fprintf(stderr,"                        (default is 0.35) \n\n");
+	fprintf(stderr,"-A mask_1:              The residue mask region for the 1st input protein, (e.g., 11111112222222) \n");
+	fprintf(stderr,"-B mask_2:              The residue mask region for the 2nd input protein. \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
 	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
 
@@ -2604,13 +2636,16 @@ int main(int argc,char **argv)
 		//reference z_score
 		double refer_z_mean=-1;
 		double refer_z_vari=-1;
+		//mask region file
+		string mask_file1="";
+		string mask_file2="";
 
 		//---- process argument ----//
 		extern char* optarg;
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:C:M:v"))!=EOF)
+			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:C:M:A:B:v"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2722,7 +2757,15 @@ int main(int argc,char **argv)
 					case 'v':
 						verbose=1;
 						break;
-						
+
+					//---- region mask file ---//
+					case 'A':
+						mask_file1 = optarg;
+						break;
+					case 'B':
+						mask_file2 = optarg;
+						break;
+
 					//----- default ----//
 					default:
 						Usage();
@@ -2735,7 +2778,7 @@ int main(int argc,char **argv)
 			job_style_pair=1;
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:C:M:"))!=EOF)
+			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:C:M:A:B:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2793,7 +2836,15 @@ int main(int argc,char **argv)
 					case 'M':
 						Multi_Cut = atof(optarg);
 						break;
-						
+
+					//---- region mask file ---//
+					case 'A':
+						mask_file1 = optarg;
+						break;
+					case 'B':
+						mask_file2 = optarg;
+						break;
+
 					//----- default ----//
 					default:
 						Usage();
@@ -2919,6 +2970,13 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: Multi_Cut must be float between 0 to 1 \n");
 			exit(-1);
 		}
+		//-> check mask file
+		if( (mask_file1=="" && mask_file2!="") || (mask_file2=="" && mask_file1!="") )
+		{
+			fprintf(stderr,"mask_file1 or mask_file2 shall not exist single \n");
+			exit(-1);
+		}
+
 
 		//=========== DeepAlign process =========//
 		int retv;
@@ -2962,11 +3020,39 @@ int main(int argc,char **argv)
 				fprintf(stderr,"FILE2 IS EMPTY!!!![%s]\n",name2.c_str());
 				exit(-1);
 			}
+			//-------------- load region mask ------------------//
+			int *reg_mask1=0;
+			int *reg_mask2=0;
+			if(mask_file1!="" && mask_file2!="")
+			{
+				vector <int> out1;
+				int mask1_len=Read_Region_Mask(mask_file1,out1);
+				vector <int> out2;
+				int mask2_len=Read_Region_Mask(mask_file2,out2);
+				//judge
+				if(mask1_len!=TM_MOLN1 || mask2_len!=TM_MOLN2)
+				{
+					fprintf(stderr,"mask1_len %d not equal to TM_MOLN1 %d || mask2_len %d not equal to TM_MOLN2 %d \n",
+						mask1_len,TM_MOLN1,mask2_len,TM_MOLN2);
+					exit(-1);
+				}
+				//new
+				reg_mask1=new int[mask1_len];
+				for(int z=0;z<mask1_len;z++)reg_mask1[z]=out1[z];
+				reg_mask2=new int[mask2_len];
+				for(int z=0;z<mask2_len;z++)reg_mask2[z]=out2[z];
+			}
+
 			//-> initialization
 			TM_Align_Init_WS(TM_MOLN1,TM_MOLN2);
 			int wsmax=TM_MOLN1>TM_MOLN2?TM_MOLN1:TM_MOLN2;
-			CLEFAPS_Main clepaps(wsmax);
 			Confo_Beta confo_beta(wsmax);
+			CLEFAPS_Main clepaps(wsmax);
+			if(reg_mask1!=0 && reg_mask2!=0)
+			{
+				clepaps.mas1=reg_mask1;
+				clepaps.mas2=reg_mask2;
+			}
 			//-> load structure
 			int PRE_LOAD_1=mol_input1.PRE_LOAD;
 			int WARNING_out_1=mol_input1.WARNING_out;
@@ -3006,6 +3092,12 @@ int main(int argc,char **argv)
 			else
 			{
 				printf("%s",out_str.c_str());
+			}
+			//-> delete
+			if(reg_mask1!=0 && reg_mask2!=0)
+			{
+				delete [] reg_mask1;
+				delete [] reg_mask2;
 			}
 		}
 		//----- proc_list DeepAlign ----//
