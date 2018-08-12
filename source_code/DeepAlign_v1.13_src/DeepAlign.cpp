@@ -3032,8 +3032,8 @@ int main(int argc,char **argv)
 				//judge
 				if(mask1_len!=TM_MOLN1 || mask2_len!=TM_MOLN2)
 				{
-					fprintf(stderr,"mask1_len %d not equal to TM_MOLN1 %d || mask2_len %d not equal to TM_MOLN2 %d \n",
-						mask1_len,TM_MOLN1,mask2_len,TM_MOLN2);
+					fprintf(stderr,"mask1_len %d not equal to TM_MOLN1 %d || mask2_len %d not equal to TM_MOLN2 %d for pair %s %s \n",
+						mask1_len,TM_MOLN1,mask2_len,TM_MOLN2,mask_file1.c_str(),mask_file2.c_str());
 					exit(-1);
 				}
 				//new
