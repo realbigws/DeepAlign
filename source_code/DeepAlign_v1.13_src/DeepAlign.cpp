@@ -1409,7 +1409,7 @@ void BLOSUN_CLESUM_Output(char *ami1,char *ami2,char *cle1,char *cle2,
 
 //====================== DeepAlign_main function ===================//__110630__//
 int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &out,
-		string &ali_file,int Out_More,int Out_Screen,int Normalize,int Kill_Gaps,int Score_Func,int QualityLevel,
+		string &ali_file,int Out_More,int Out_Screen,int Normalize,int Kill_Gaps,int Score_Func,int QualityLevel,int QualityDegree,
 		string &output_root,string &out_str,double &ret_val,int SIMPLY_LOAD,int Kill_Frag,
 		double Distance_Cutoff,double Multi_Cut)
 {
@@ -1493,9 +1493,9 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 			clepaps.TM_ADDITION=0;     //no additional TMalign procedure !! //__110720__//
 			clepaps.REFINE_ITER=3;     //only three iteration
 			clepaps.WS_Refine_Cut=0.5; //50% cutoff to the maximal
-			clepaps.ZM_Upper_Max=50;   //only consider initial 50 SFP_H as TopJ
-			clepaps.ZM_Lower_Max=10;   //only consider initial 10 SFP_H as TopJ
-			clepaps.ZM_TopK=10;        //only consider TopK as 10
+			clepaps.ZM_Upper_Max=50*QualityDegree;   //only consider initial 50 SFP_H as TopJ
+			clepaps.ZM_Lower_Max=10*QualityDegree;   //only consider initial 10 SFP_H as TopJ
+			clepaps.ZM_TopK=10+QualityDegree-1;      //only consider TopK as 10
 			if(Out_More>=2)clepaps.ZM_TopL=5;  //only consider top5
 			else clepaps.ZM_TopL=2;            //only consider top2
 			ws_ret=clepaps.FM_Align_Normal(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,norm_len,norm_d0); //fast version
@@ -2507,7 +2507,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.3 [Aug-11-2018] \n");
+	fprintf(stderr,"DeepAlign v1.35 [Aug-13-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
@@ -2530,7 +2530,8 @@ void Usage(void)
 	fprintf(stderr,"                        1,  output alignment files for single solution. \n");
 	fprintf(stderr,"                        2,  output alignment files for multiple solutions.\n\n");
 	fprintf(stderr,"-u quality:             0,  fast, low quality. \n");
-	fprintf(stderr,"                       [1], slow, high quality. (Set as default) \n\n");
+	fprintf(stderr,"                       [1], slow, high quality. (Set as default) \n");
+	fprintf(stderr,"-U quality_degree:      Quality degree for -u 0 only, ranges from 1 to 10. (set 1 as default) \n\n");
 	fprintf(stderr,"-P screenout:           0,  simple screenout alignment scores. \n");
 	fprintf(stderr,"                       [1], detailed screenout alignment scores. (Set as default) \n\n");
 	fprintf(stderr,"-n normalize_len:       Specify a normalization length for the calculation of TMscore,MAXSUB,GDT_TS/HA. In particular,\n");
@@ -2629,6 +2630,7 @@ int main(int argc,char **argv)
 		int Kill_Gaps=1;
 		int Score_Func=7;
 		int quality_level=1;
+		int quality_degree=1;
 		double loc_para=10;
 		int Kill_Frag=1;   // we kill frags by default
 		double Distance_Cutoff=-1; // we cut the previous aligned positions exceeding this distance cutoff
@@ -2645,7 +2647,7 @@ int main(int argc,char **argv)
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:l:j:d:w:C:M:A:B:v"))!=EOF)
+			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:U:l:j:d:w:C:M:A:B:v"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2732,6 +2734,9 @@ int main(int argc,char **argv)
 						break;
 					case 'u':
 						quality_level = atoi(optarg);
+						break;
+					case 'U':
+						quality_degree = atoi(optarg);
 						break;
 					case 'l':
 						loc_para = atof(optarg);
@@ -2823,6 +2828,9 @@ int main(int argc,char **argv)
 						break;
 					case 'u':
 						quality_level = atoi(optarg);
+						break;
+					case 'U':
+						quality_degree = atoi(optarg);
 						break;
 					case 'l':
 						loc_para = atof(optarg);
@@ -2945,9 +2953,14 @@ int main(int argc,char **argv)
 			fprintf(stderr,"ERROR: score_func must be integer between 1 to 7 \n");
 			exit(-1);
 		}
-		if(quality_level<0 || quality_level>2)
+		if(quality_level<0 || quality_level>1)
 		{
-			fprintf(stderr,"ERROR: quality must be integer between 0 to 2 \n");
+			fprintf(stderr,"ERROR: quality must be integer between 0 to 1 \n");
+			exit(-1);
+		}
+		if(quality_degree<1 || quality_degree>10)
+		{
+			fprintf(stderr,"ERROR: quality_degree must be integer between 1 to 10 \n");
 			exit(-1);
 		}
 		if(loc_para<0)
@@ -3083,7 +3096,8 @@ int main(int argc,char **argv)
 			if(out!="" && Out_More<=0)Out_More=1;
 			if(out=="" && Out_More>0)out=wsnam1+"-"+wsnam2;
 			DeepAlign_main(clepaps,wsnam1,wsnam2,out,ali_file,Out_More,Out_Screen,
-				Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
+				Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
+				out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
 			//-> output
 			if(rankbose==1)
 			{
@@ -3161,7 +3175,8 @@ int main(int argc,char **argv)
 				double ret_val;
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
-					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
+					Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
+					out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
 				//-> output
 				if(rankbose==1)
 				{
@@ -3430,7 +3445,8 @@ int main(int argc,char **argv)
 				double ret_val;
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
-					Normalize,Kill_Gaps,Score_Func,quality_level,out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag,Distance_Cutoff,Multi_Cut);
+					Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
+					out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag,Distance_Cutoff,Multi_Cut);
 				//-> output record
 				out_rec.push_back(out_str);
 				out_sco.push_back(ret_val);
