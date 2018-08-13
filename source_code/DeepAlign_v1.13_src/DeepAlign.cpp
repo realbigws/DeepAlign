@@ -2783,7 +2783,7 @@ int main(int argc,char **argv)
 			job_style_pair=1;
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:l:j:C:M:A:B:"))!=EOF)
+			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:U:l:j:C:M:A:B:"))!=EOF)
 			{
 				switch(c) 
 				{
