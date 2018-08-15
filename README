@@ -1,6 +1,6 @@
 =======================
-DeepAlign_Open (v1.2)
-date: 2016.05.20
+DeepAlign_Open (v1.35)
+date: 2018.08.15
 =======================
 
 Author: Sheng Wang 
@@ -54,6 +54,7 @@ For DeepAlign_Open (v1.2)
 
 3. multiple solution output is now functional. ( -p out_option option)
 
+4. allow user to input 'mask' files for setting the region segments. (-A, -B option)
 
 
 ========
