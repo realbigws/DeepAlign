@@ -1406,11 +1406,92 @@ void BLOSUN_CLESUM_Output(char *ami1,char *ami2,char *cle1,char *cle2,
 	clesum/=10;
 }
 
+//-------------- mask region strict check -----------------//
+//-> we enforce that all mask regions should be aligned
+//[note]: regions should be range from 1 to 9 (0 indicate NULL region)
+//        cover_rate is the threshold that the mask region is covered by alignment
+int Mask_Region_StrictCheck(CLEFAPS_Main &clepaps,double cover_rate)
+{
+	//-- init check --//
+	if(clepaps.mas1==0 || clepaps.mas2==0)return 1;
+
+	//-- create mask region --//
+	vector <int> check_mask1(10,0);
+	vector <int> check_mask2(10,0);
+	for(int wsi=0;wsi<TM_MOLN1;wsi++)
+	{
+		int mask=clepaps.mas1[wsi];
+		if(mask<0 || mask>9)
+		{
+			fprintf(stderr,"BAD MASK in mask file 1 \n");
+			exit(-1);
+		}
+		check_mask1[mask]++;
+	}
+	for(int wsi=0;wsi<TM_MOLN2;wsi++)
+	{
+		int mask=clepaps.mas2[wsi];
+		if(mask<0 || mask>9)
+		{
+			fprintf(stderr,"BAD MASK in mask file 2 \n");
+			exit(-1);
+		}
+		check_mask2[mask]++;
+	}
+
+	//-- check each alignment solution --//
+	vector <Align_Record> FM_align_tot;
+	FM_align_tot.clear();
+	int count=0;
+	for(int i=0;i<(int)clepaps.FM_align_tot.size();i++)
+	{
+		//check mask region
+		vector <int> exist_mask1(10,0);
+		vector <int> exist_mask2(10,0);
+		//get alignment
+		for(int wsi=0;wsi<TM_MOLN2;wsi++)TM_ALIGNMENT[wsi]=clepaps.FM_align_tot[i].alignment[wsi];
+		//check alignment
+		for(int wsi=0;wsi<TM_MOLN2;wsi++)
+		{
+			if(TM_ALIGNMENT[wsi]>=0)
+			{
+				int ii=TM_ALIGNMENT[wsi];
+				int jj=wsi;
+				exist_mask1[clepaps.mas1[ii]]++;
+				exist_mask2[clepaps.mas2[jj]]++;
+			}
+		}
+		//check mask
+		int correct=1;
+		for(int m=1;m<10;m++)
+		{
+			int exist1=exist_mask1[m];
+			int exist2=exist_mask2[m];
+			int orig1=check_mask1[m];
+			int orig2=check_mask2[m];
+			if(orig1==0 || orig2==0)continue;
+			int smaller_orig=orig1<orig2?orig1:orig2;
+			if(1.0*exist1/smaller_orig<cover_rate || 1.0*exist2/smaller_orig<cover_rate)
+			{
+				correct=0;
+				break;
+			}
+		}
+		if(correct==1)
+		{
+			FM_align_tot.push_back(clepaps.FM_align_tot[i]);
+			count++;
+		}
+	}
+	clepaps.FM_align_tot=FM_align_tot;
+	return count;
+}
+
 
 //====================== DeepAlign_main function ===================//__110630__//
 int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &out,
 		string &ali_file,int Out_More,int Out_Screen,int Normalize,int Kill_Gaps,int Score_Func,int QualityLevel,int QualityDegree,
-		string &output_root,string &out_str,double &ret_val,int SIMPLY_LOAD,int Kill_Frag,
+		string &output_root,string &out_str,double &ret_val,int SIMPLY_LOAD,int Kill_Frag,double Mask_StrickCheck,
 		double Distance_Cutoff,double Multi_Cut)
 {
 	//-------- ws_weight_process ------------//__110810__//
@@ -1556,6 +1637,23 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		out_str=ws_command;
 		ret_val=zerod;
 		return 0;
+	}
+
+	//--- strict check mask region alignment ----//__180820__//
+	if(Mask_StrickCheck>0)
+	{
+		int mask_ret=Mask_Region_StrictCheck(clepaps,Mask_StrickCheck);
+		if(mask_ret==0)
+		{
+			char ws_command[30000];
+			double zerod=0;
+			int zeroi=0;
+			sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.3f\n",
+			wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,zeroi,zeroi,zerod,zeroi,zerod,zerod,zerod,zerod,zerod,zeroi,norm_len,Distance_Cutoff,zerod);
+			out_str=ws_command;
+			ret_val=zerod;
+			return 0;
+		}
 	}
 
 	//------ output ------//
@@ -2174,6 +2272,7 @@ void WS_Transfer_Float_To_XYZ(float *input,XYZ *output,int moln)
 }
 
 //---- calculate reference score -----//
+
 int WS_Calculate_Reference_Score(CLEFAPS_Main &clepaps,double tms_cut,
 	string &wsnam1,string &wsnam2,int ref_id,string &ret_str,double &ret_val)
 {
@@ -2187,6 +2286,7 @@ int WS_Calculate_Reference_Score(CLEFAPS_Main &clepaps,double tms_cut,
 	int retv=DeepAlign_search(clepaps,wsnam1,wsnam2,ret_str,ret_val,tms_cut);
 	return retv;
 }
+
 
 //----- simply load PDB file -----//
 //========== process PDB ============//
@@ -2507,7 +2607,7 @@ void Usage(void)
 	fprintf(stderr,"-------------------------------------------------------\n");
 */
 
-	fprintf(stderr,"DeepAlign v1.35 [Aug-13-2018] \n");
+	fprintf(stderr,"DeepAlign v1.4 [Aug-20-2018] \n");
 	fprintf(stderr,"Sheng Wang, Jianzhu Ma, Jian Peng and Jinbo Xu.\n");
 	fprintf(stderr,"   PROTEIN STRUCTURE ALIGNMENT BEYOND SPATIAL PROXIMITY\n");
 	fprintf(stderr,"                Scientific Reports, 3, 1448, (2013) \n\n");
@@ -2546,7 +2646,8 @@ void Usage(void)
 	fprintf(stderr,"-M multi_cut:           if multiple solution is specified, set a TMscore cutoff for minimal quality of the solution/ \n");
 	fprintf(stderr,"                        (default is 0.35) \n\n");
 	fprintf(stderr,"-A mask_1:              The residue mask region for the 1st input protein, (e.g., 11111112222222) \n");
-	fprintf(stderr,"-B mask_2:              The residue mask region for the 2nd input protein. \n\n");
+	fprintf(stderr,"-B mask_2:              The residue mask region for the 2nd input protein. \n");
+	fprintf(stderr,"-K strict_check:        Enforce that all mask regions shall be aligned above a ratio. (set 0 as NOT to check by default) \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
 	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
 
@@ -2641,13 +2742,14 @@ int main(int argc,char **argv)
 		//mask region file
 		string mask_file1="";
 		string mask_file2="";
+		double Strict_Check=-1;
 
 		//---- process argument ----//
 		extern char* optarg;
 		int c=0;
 		if(NEWorOLD==0) //old style
 		{
-			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:U:l:j:d:w:C:M:A:B:v"))!=EOF)
+			while((c=getopt(argc,argv,"g:h:e:i:f:z:r:m:b:c:t:q:a:x:y:o:O:p:P:n:k:s:u:U:l:j:d:w:C:M:A:B:K:v"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2770,6 +2872,9 @@ int main(int argc,char **argv)
 					case 'B':
 						mask_file2 = optarg;
 						break;
+					case 'K':
+						Strict_Check = atof(optarg);
+						break;
 
 					//----- default ----//
 					default:
@@ -2783,7 +2888,7 @@ int main(int argc,char **argv)
 			job_style_pair=1;
 			name1 = argv[1];
 			name2 = argv[2];
-			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:U:l:j:C:M:A:B:"))!=EOF)
+			while((c=getopt(argc,argv,"e:a:x:y:o:O:p:P:n:k:s:u:U:l:j:C:M:A:B:K:"))!=EOF)
 			{
 				switch(c) 
 				{
@@ -2851,6 +2956,9 @@ int main(int argc,char **argv)
 						break;
 					case 'B':
 						mask_file2 = optarg;
+						break;
+					case 'K':
+						Strict_Check = atof(optarg);
 						break;
 
 					//----- default ----//
@@ -2989,6 +3097,11 @@ int main(int argc,char **argv)
 			fprintf(stderr,"mask_file1 or mask_file2 shall not exist single \n");
 			exit(-1);
 		}
+		if(Strict_Check>1)
+		{
+			fprintf(stderr,"ERROR: Strict_Check must be float between 0 to 1 \n");
+			exit(-1);
+		}
 
 
 		//=========== DeepAlign process =========//
@@ -3097,7 +3210,7 @@ int main(int argc,char **argv)
 			if(out=="" && Out_More>0)out=wsnam1+"-"+wsnam2;
 			DeepAlign_main(clepaps,wsnam1,wsnam2,out,ali_file,Out_More,Out_Screen,
 				Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
-				out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
+				out_root,out_str,ret_val,0,Kill_Frag,Strict_Check,Distance_Cutoff,Multi_Cut);
 			//-> output
 			if(rankbose==1)
 			{
@@ -3176,7 +3289,7 @@ int main(int argc,char **argv)
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
 					Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
-					out_root,out_str,ret_val,0,Kill_Frag,Distance_Cutoff,Multi_Cut);
+					out_root,out_str,ret_val,0,Kill_Frag,-1,Distance_Cutoff,Multi_Cut);
 				//-> output
 				if(rankbose==1)
 				{
@@ -3259,6 +3372,7 @@ int main(int argc,char **argv)
 					{
 						retv=WS_Calculate_Reference_Score(clepaps,CLE_Filter_thres/2,
 							reference_nam[i],wsnam2,i,ret_str,ret_val);
+						retv=0;
 						if(retv==1)
 						{
 							tmp_sss[cur_count]=ret_val;
@@ -3446,7 +3560,7 @@ int main(int argc,char **argv)
 				string wsout=wsnam1+"-"+wsnam2;
 				DeepAlign_main(clepaps,wsnam1,wsnam2,wsout,ali_null,Out_More,Out_Screen,
 					Normalize,Kill_Gaps,Score_Func,quality_level,quality_degree,
-					out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag,Distance_Cutoff,Multi_Cut);
+					out_root,out_str,ret_val,SIMPLY_LOAD,Kill_Frag,-1,Distance_Cutoff,Multi_Cut);
 				//-> output record
 				out_rec.push_back(out_str);
 				out_sco.push_back(ret_val);
