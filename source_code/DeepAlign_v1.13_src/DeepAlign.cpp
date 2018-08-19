@@ -1562,7 +1562,17 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	else
 	{
 		clepaps.TM_DIST_CUT=1;
-		clepaps.d8=Distance_Cutoff;
+		if(Distance_Cutoff<clepaps.d0+1.0)
+		{
+			fprintf(stderr,"WARNING: user assigned distance cutoff %lf is smaller than d0+1.0 %lf !!\n",
+				Distance_Cutoff,clepaps.d0+1.0);
+			clepaps.d8=clepaps.d0+1.0;
+		}
+		else
+		{
+			clepaps.d8=Distance_Cutoff;
+		}
+		clepaps.TM_DistCut=Distance_Cutoff;
 	}
 
 	//-------- speed up -------//
