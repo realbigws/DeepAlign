@@ -3382,7 +3382,6 @@ int main(int argc,char **argv)
 					{
 						retv=WS_Calculate_Reference_Score(clepaps,CLE_Filter_thres/2,
 							reference_nam[i],wsnam2,i,ret_str,ret_val);
-						retv=0;
 						if(retv==1)
 						{
 							tmp_sss[cur_count]=ret_val;
