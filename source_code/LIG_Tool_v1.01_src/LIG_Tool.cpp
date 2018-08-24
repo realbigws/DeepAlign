@@ -895,6 +895,13 @@ int main(int argc, char** argv)
 		string out_name=OUTPUT_NAME;
 		string pdb_out_root=CHAIN_OUTROOT;
 		string ligand_out_root=LIGAND_OUTROOT;
+		//create output
+		char command[30000];
+		sprintf(command,"mkdir -p %s",pdb_out_root.c_str());
+		system(command);
+		sprintf(command,"mkdir -p %s",ligand_out_root.c_str());
+		system(command);
+		//process
 		int len_cut=LENGTH_CUT;
 		double distance_cut=DISTANCE_CUT;
 		PDB_Ligand_All_Process(input_pdb,out_name,pdb_out_root,ligand_out_root,len_cut,distance_cut);
