@@ -12,7 +12,7 @@ fi
 # ----- usage ------ #
 usage()
 {
-	echo "USAGE: ./oneline_strucsco_matrix.sh <-i list1> <-r root1> <-I list2> <-R root2> <-p program> "
+	echo "USAGE: $0 <-i list1> <-r root1> <-I list2> <-R root2> <-p program> "
 	echo "               [-o out_root] [-j job_id] [-z TMSorGDT] [-n NAMorNOT] [-s options] [-f suffix] "
 	echo "               [-K remove_tmp] [-H home] " 
 	echo "[note1]:  <listX> and <rootX> are relative or absolute directory. "
