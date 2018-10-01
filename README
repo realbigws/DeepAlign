@@ -108,7 +108,7 @@ with the following CPU type,
 Setup for structure homolog search:
 ===================================
 
-In this package please find an example PDB database in databases/CAL_PDB.tar.gz
+In this package please find an example PDB database in databases/CAL_PDB
 reference_pdb_list contains all the proteins in this folder. 
 Please do not delete or change CAL_PDB and reference_pdb_list.
 
@@ -132,13 +132,7 @@ You can also build your own database for structure homology search.
 ------
 
 3. reference PDB database
-Note: The original compressed tar-ball file of CAL_PDB/ could be found at databases/CAL_PDB.tar.gz
-Type the following command to un-compress the reference PDB database:
-
-cd databases/
-	tar xzf CAL_PDB.tar.gz
-cd ../
-
+Note: The reference PDB database locates at databases/CAL_PDB
 
 
 
@@ -202,8 +196,7 @@ By default, LIG_Tool is not available. To get LIG_Tool, please type the followin
 Two result files will be: 1pazA.rank and 1pazA.rank_simp, which contain detailed and summary results, respectively.
 
 6. Run batch pariwise comparison
-	./oneline_strucsco_matrix.sh -i examples/bc40_top10_list -r databases/pdb_BC100/ -I examples/bc40_top10_list -R databases/pdb_BC100/ \
-		-p DeepAlign -f ".pdb" -n 1
+	./oneline_strucsco_matrix.sh -i examples/ref_top10_list -r databases/CAL_PDB -I examples/ref_top10_list -R databases/CAL_PDB -p DeepAlign -f ".pdb"
 
 
 
