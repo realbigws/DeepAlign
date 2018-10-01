@@ -140,34 +140,24 @@ Note: The reference PDB database locates at databases/CAL_PDB
 Main programs:
 ==============
 
-1. Pairwise structure alignment
+1. Evaluate quality scores of a given pairwise protein alignment.
+(i.e., GDT, TMscore, MaxSub, and DeepScore)
+	./DeepScore protein_1 protein_2 <-a alignment>
+
+2. Pairwise structure alignment
 To run pairwise alignment, type the following command,
 	./DeepAlign protein_T protein_S
 
-2. Multiple structure alignment
+3. Multiple structure alignment
 To run multiple alignment, type the following command,
 	./3DCOMB -i input_list
 
-3. Database search
+4. Database search
 To run database search, type the following command,
 	./DeepSearch -a NP -q query_file -l pdb_list -d path_to_folder_containing_PDB_files
 
 Usage information for all the programs are available by simply running these programs without any arguments.
 
-
-
-==============
-Misc programs:
-==============
-
-1. PDB process tool.
-(convert official PDB to compact form. Reconstruct missing backbone and CB atom)
-	./PDB_Tool <-i input> <-r range> <-o output>
-For more details, please refer to https://github.com/realbigws/PDB_Tool
-
-2. Evaluate quality scores of a given pairwise protein alignment. 
-(i.e., GDT, TMscore, MaxSub, and DeepScore)
-	./DeepScore protein_1 protein_2 <-a alignment> 
 
 
 
@@ -177,25 +167,17 @@ Examples:
 
 Note: the first three examples are located in examples/ directory
 
-1. Get a certain range in an official PDB, and save it to canonical form
-	./PDB_Tool -i 1col.pdb -r A -o 1colA.pdb 
-
-2. Extract the chains and the ligands from an official PDB,
-	./LIG_Tool -i 1paz.pdb
-By default, LIG_Tool is not available. To get LIG_Tool, please type the following command:
-	 cd source_code; make LIG_Tool; cd ../
-
-3. Run pairwise structure alignment for 1col.pdb and 1cpc.pdb
+1. Run pairwise structure alignment for 1col.pdb and 1cpc.pdb
 	./DeepAlign 1col.pdb 1cpc.pdb
 
-4. Run multiple structure alignment for proteins in input_list
+2. Run multiple structure alignment for proteins in input_list
 	./3DCOMB -i input_list
 
-5. Run database search for 1pazA.pdb against bc40 template database
+3. Run database search for 1pazA.pdb against bc40 template database
 	./DeepSearch -q 1pazA.pdb -d databases/CAL_PDB/ -l databases/reference_pdb_list
-Two result files will be: 1pazA.rank and 1pazA.rank_simp, which contain detailed and summary results, respectively.
+   Two result files will be: 1pazA.rank and 1pazA.rank_simp, which contain detailed and summary results, respectively.
 
-6. Run batch pariwise comparison
+4. Run batch pariwise comparison
 	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/CAL_PDB -I examples/ref_top10_list -R databases/CAL_PDB -p DeepAlign -f ".pdb"
 
 

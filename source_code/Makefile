@@ -6,30 +6,18 @@ CXX = g++
 FLAG = -O3
 SHELL :=/bin/bash
 
-PDBToolDir = ./PDB_Tool_src
-LIGToolDir = ./LIG_Tool_src
 DeepScoreDir = ./DeepScore_src
 DeepAlignDir = ./DeepAlign_src
 3DCOMBDIR = ./3DCOMB_src
 
-PDBToolEXE = /PDB_Tool
-LIGToolEXE = /LIG_Tool
 DeepScoreEXE = /DeepScore
 DeepAlignEXE = /DeepAlign
 3DCOMBEXE = /3DCOMB
 UTILS = ./util_src/
 
 
-all: PDB_Tool DeepScore DeepAlign 3DCOMB DeepSearch util
+all: DeepScore DeepAlign 3DCOMB DeepSearch util
 
-
-PDB_Tool:
-	cd $(PDBToolDir)&&make
-	mv ${PDBToolDir}$(PDBToolEXE) ../
-
-LIG_Tool:
-	cd $(LIGToolDir)&&make
-	mv ${LIGToolDir}$(LIGToolEXE) ../
 
 DeepScore:
 	cd $(DeepScoreDir)&&make
