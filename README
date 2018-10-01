@@ -196,7 +196,7 @@ By default, LIG_Tool is not available. To get LIG_Tool, please type the followin
 Two result files will be: 1pazA.rank and 1pazA.rank_simp, which contain detailed and summary results, respectively.
 
 6. Run batch pariwise comparison
-	./batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/CAL_PDB -I examples/ref_top10_list -R databases/CAL_PDB -p DeepAlign -f ".pdb"
+	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/CAL_PDB -I examples/ref_top10_list -R databases/CAL_PDB -p DeepAlign -f ".pdb"
 
 
 
