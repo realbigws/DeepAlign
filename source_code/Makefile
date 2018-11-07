@@ -40,11 +40,8 @@ util:
 	$(CXX) $(UTILS)Fitting_EVD.cpp $(FLAG) -o Fitting_EVD
 	$(CXX) $(UTILS)Domain_Proc.cpp $(FLAG) -o Domain_Proc
 	$(CXX) $(UTILS)PDB_File_Cut.cpp $(FLAG) -o PDB_File_Cut
-	$(CXX) $(UTILS)distribute_ii_openmp.cpp $(FLAG) -D_OMP -fopenmp -o distribute_ii_openmp
 	mkdir -p ../util
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut distribute_ii_openmp ../util/
-
-
+	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut ../util/
 
 # clean all the temp files
 clean:

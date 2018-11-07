@@ -18,7 +18,7 @@ usage()
 	echo "[note1]:  <listX> and <rootX> are relative or absolute directory. "
 	echo "          <jobid> would be the name of output and temporary directory. "
 	echo "          <program> should be either DeepScore or DeepAlign. "
-	echo "          DeepScore, DeepAlign, distribute_ii_openmp should exist. "
+	echo "          DeepScore, DeepAlign should exist. "
 	echo "[note2]:  Default value of 'job_id' is struct, default value of 'out_root' is './\${job_id}_out "
 	echo "          'TMSorGDT' (default = 0) for output TMscore[1], or uGDT[2], or both[0]. "
 	echo "          'NAMorNOT' (default = 0) for output header[1], or not[0]. "
@@ -188,16 +188,14 @@ relist2=$tmp_root/$jobid.list2
 proclist=$tmp_root/$jobid.strucsco_matrix_proc
 tmpdir=$tmp_root/tmp"_"$jobid"_"strucsco_matrix
 mkdir -p $tmpdir
-rm -f $tmp_root/$proclist
 for f in `cat $relist1`
 do
 	for g in `cat $relist2`
 	do
-		echo "$home/$program $root1/$f$suffix $root2/$g$suffix -P 0 $options > $tmpdir/$f-$g.tmp_sco" >> $proclist
+		$home/$program $root1/$f$suffix $root2/$g$suffix -P 0 $options > $tmpdir/$f-$g.tmp_sco &
 	done
 done
-$home/util/distribute_ii_openmp $proclist
-rm -f $proclist
+wait
 
 #----- get TMscore ------#
 if [ $TMSorGDT -eq 0 ] || [ $TMSorGDT -eq 1 ]
