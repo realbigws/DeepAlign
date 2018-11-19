@@ -1690,9 +1690,9 @@ void Output_Detailed(FILE *fp,PDB_Residue *pdb1,PDB_Residue *pdb2,
 			{
 				//-> get residue number
 				string res1="";
-				if(pdb1[ii-1].get_PDB_residue_number(res1)==0)res1=res1.substr(1,4);
+				if(pdb1[ali1_seq_pdb[ii-1]].get_PDB_residue_number(res1)==0)res1=res1.substr(1,4);
 				string res2="";
-				if(pdb2[jj-1].get_PDB_residue_number(res2)==0)res2=res2.substr(1,4);
+				if(pdb2[ali2_seq_pdb[jj-1]].get_PDB_residue_number(res2)==0)res2=res2.substr(1,4);
 				//-> output
 				fprintf(fp,"%c%c %4s %4s | %1d %4d %4d %6.1f | %6.2f %6.3f\n",
 					nam1_content[ii-1],nam2_content[jj-1],res1.c_str(),res2.c_str(),
