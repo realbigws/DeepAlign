@@ -9,11 +9,11 @@ SHELL :=/bin/bash
 DeepScoreDir = ./DeepScore_src
 DeepAlignDir = ./DeepAlign_src
 3DCOMBDIR = ./3DCOMB_src
+UTILS = ./util_src/
 
 DeepScoreEXE = /DeepScore
 DeepAlignEXE = /DeepAlign
 3DCOMBEXE = /3DCOMB
-UTILS = ./util_src/
 
 
 all: DeepScore DeepAlign 3DCOMB util
