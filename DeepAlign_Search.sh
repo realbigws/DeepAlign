@@ -23,7 +23,7 @@ declare FUNC_RET                #-> for the function echo value
 # ----- usage ------ #
 function usage()
 {
-	echo "DeepAlign_Search v0.01 [Nov-30-2018] "
+	echo "DeepAlign_Search v1.00 [Nov-30-2018] "
 	echo "    Search a template database to find structurally similar proteins for a query protein structure "
 	echo ""
 	echo "USAGE:  ./DeepAlign_Search.sh <-q query_pdb> [-l data_list] [-d data_db] [-L refer_list] [-D refer_db] "
