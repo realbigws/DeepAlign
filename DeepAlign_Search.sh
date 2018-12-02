@@ -28,7 +28,7 @@ function usage()
 	echo ""
 	echo "USAGE:  ./DeepAlign_Search.sh <-q query_pdb> [-l data_list] [-d data_db] [-L refer_list] [-D refer_db] "
 	echo "                              [-t tmsco] [-p pval] [-k topK] [-s score_func] [-C cut_alignment] [-c CPU_num]"
-	echo "                              [-o output_root] [-O output_file] [-a output_align] [-s sort] [-S options] [-H home] "
+	echo "                              [-o output_root] [-O output_file] [-s sort] [-S options] [-H home] "
 	echo "Options:"
 	echo ""
 	echo "***** required arguments *****"
@@ -177,7 +177,6 @@ CPU_num=1                       #-> default CPU_num is 1
 #--| output related
 output_root=""
 output_file=""
-output_align=""
 #--| other arguments
 sort_col=8                      #-> sort by DeepScore
 #---- screen output format -----#
@@ -235,9 +234,6 @@ do
 		;;
 	O)
 		output_file=$OPTARG
-		;;
-	a)
-		output_align=$OPTARG
 		;;
 	#--| other arguments
 	s)
@@ -367,19 +363,6 @@ then
 else
 	output_file="-1"
 fi
-if [ "$output_align" != "" ]
-then
-	dir_output_align=`dirname $output_align`
-	nam_output_align=`basename $output_align`
-	if [ "$dir_output_align" == "." ]
-	then
-		output_align=$output_root/$output_align
-	fi
-	mkdir -p $output_align
-else
-	output_align="-1"
-fi
-
 
 
 #-----------------------------------------------------#
