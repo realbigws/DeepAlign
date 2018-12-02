@@ -16,7 +16,7 @@ DeepAlignEXE = /DeepAlign
 UTILS = ./util_src/
 
 
-all: DeepScore DeepAlign 3DCOMB DeepSearch util
+all: DeepScore DeepAlign 3DCOMB util
 
 
 DeepScore:
@@ -31,17 +31,16 @@ DeepAlign:
 	cd $(3DCOMBDIR)&&make
 	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
 
-DeepSearch:
-	$(CXX) DeepSearch.cpp getopt.cpp $(FLAG) -lpthread -o DeepSearch
-	mv DeepSearch ../
-
 util:
 	$(CXX) $(UTILS)Stat_List.cpp $(FLAG) -o Stat_List
 	$(CXX) $(UTILS)Fitting_EVD.cpp $(FLAG) -o Fitting_EVD
 	$(CXX) $(UTILS)Domain_Proc.cpp $(FLAG) -o Domain_Proc
 	$(CXX) $(UTILS)PDB_File_Cut.cpp $(FLAG) -o PDB_File_Cut
+	$(CXX) $(UTILS)TopK_by_EVD.cpp $(FLAG) -o TopK_by_EVD
+	$(CXX) $(UTILS)List_Div_Shuf.cpp $(FLAG) -o List_Div_Shuf
+	$(CXX) $(UTILS)DeepSearch_Rank.cpp $(FLAG) -o DeepSearch_Rank
 	mkdir -p ../util
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut ../util/
+	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank ../util/
 
 # clean all the temp files
 clean:
