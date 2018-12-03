@@ -49,6 +49,7 @@ function usage()
 	echo "-p pval              : Keep the results for top proteins according to P-value cutoff [default = 0.001; set -1 to disable]"
 	echo ""
 	echo "-k topK              : Keep the results for top topK proteins [default = 100]"
+	echo "                       set 0 to skip the re-align step and NO alignment; set -1 to scan ALL the input_list without filter."
 	echo ""
 	echo "-s score_func        : 1:distance-score,2:vector-score,4:evolution-score; these scores could be combined [default 7]"
 	echo ""
@@ -60,7 +61,7 @@ function usage()
 	echo "-o output_root       : The root for output file. At least one brief summary 'query.SortedScore_pvalue' will be generated."
 	echo "                       [default = './\${input_name}_DeepSearch'] "
 	echo ""
-	echo "-O output_file       : The file containing a complex summary of the topK prediction results."
+	echo "-O output_file       : The file containing a complex summary of the topK (>0) prediction results."
 	echo "                       if not specified, then only a brief summary of the results will be generated. [default = null]"
 	echo ""
 	echo "***** other arguments *****"
@@ -312,12 +313,10 @@ refer_relnam=${refer_fulnam%.*}
 data_fulnam=`basename $data_list`
 data_relnam=${data_fulnam%.*}
 
-#-- data length ---#
+#-- topk and data_len ---#
 data_len=`wc $data_list | awk '{print $1}'`
-if [ $topK -lt 0 ] || [ $topK -gt $data_len ]
-then
-	topK=$data_len
-fi
+rel_topk=$topK
+
 
 #========================== Part 0.2 check the relevant roots of output arguments ========================#
 
@@ -384,6 +383,8 @@ VARI=0.5
 #---- calculate Z-score and E-value -------#
 if [ 1 -eq "$(echo "$pval > 0" | bc)" ]    #-> calculate refer_list for p-value if pval > 0
 then
+	#--------- echo -----------------#
+	echo "step0: calculate Z-score and E-value"
 
 	#--------- preliminary ----------#
 	#--| cut refer_list into N threads
@@ -473,8 +474,10 @@ fi
 
 #================== Part 1.2 run main search for data_list ==================# 
 
-if true 
+if [ $rel_topk -ge 0 ]
 then
+	#--------- echo -----------------#
+	echo "step1: run main search for $data_list"
 
 	#--------- preliminary ----------#
 	#--| cut refer_list into N threads
@@ -525,27 +528,39 @@ fi
 
 #================== Part 1.3 re-align topK ==================# 
 
-rel_topk=$topK
-if [ $rel_topk -gt 0 ]
+if [ $rel_topk -ne 0 ]
 then
-	#--------- consider topK by p-value ------#
-	pval_para=${output_root}/${relnam}_${refer_relnam}.pvalue_param
-	sorted_score=${output_root}/${relnam}_${data_relnam}.SortedScore
-	sorted_file=${prot}/${relnam}_${data_relnam}.SortedScore_${sort_col}
-	awk '{print $a}' a=${sort_col} $sorted_score > $sorted_file
-	topk_from_pval=`${LOCAL_HOME}/util/TopK_by_EVD $sorted_file $pval_para $pval`
-	if [ $topk_from_pval -gt $topK ]
-	then
-		rel_topk=$topk_from_pval
-	fi
-	rm -f $sorted_file
+	#--------- echo -----------------#
+	echo "step2: re-align $rel_topk"
 
 	#--------- preliminary ----------#
-	#--| generate topKlist
 	topk_list=${output_root}/${relnam}_${data_relnam}_topKlist
-	head -n $rel_topk ${output_root}/${relnam}_${data_relnam}.SortedScore | awk '{print $1}' > $topk_list
 	topk_align=${output_root}/${relnam}_${data_relnam}_topKalign
 	mkdir -p $topk_align
+
+	#--------- consider topK by p-value ------#
+	if [ $rel_topk -gt 0 ]
+	then
+		#--| generate topK
+		pval_para=${output_root}/${relnam}_${refer_relnam}.pvalue_param
+		sorted_score=${output_root}/${relnam}_${data_relnam}.SortedScore
+		sorted_file=${prot}/${relnam}_${data_relnam}.SortedScore_${sort_col}
+		awk '{print $a}' a=${sort_col} $sorted_score > $sorted_file
+		topk_from_pval=`${LOCAL_HOME}/util/TopK_by_EVD $sorted_file $pval_para $pval`
+		if [ $topk_from_pval -gt $rel_topk ]
+		then
+			rel_topk=$topk_from_pval
+		fi
+		rm -f $sorted_file
+		#--| generate topKlist
+		head -n $rel_topk ${output_root}/${relnam}_${data_relnam}.SortedScore | awk '{print $1}' > $topk_list
+	else
+		#--| generate topK
+		rel_topk=$data_len
+		#--| generate topKlist
+		cp $data_list $topk_list
+	fi
+
 	#--| cut refer_list into N threads
 	${LOCAL_HOME}/util/List_Div_Shuf $topk_list $CPU_num $prot
 	OUT=$?
