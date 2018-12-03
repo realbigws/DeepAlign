@@ -9,7 +9,7 @@ then
 fi
 
 # ============== global variables defined here ========= # start
-declare MAXSIZE=3000            #-> maximal subjext length   (default: 3000)
+declare MAXSIZE=5000            #-> maximal subjext length   (default: 5000)
 declare FUNC_RET                #-> for the function echo value
 # ============== global variables defined here ========= # end
 
