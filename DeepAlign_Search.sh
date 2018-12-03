@@ -388,9 +388,10 @@ then
 	#--------- preliminary ----------#
 	#--| cut refer_list into N threads
 	${LOCAL_HOME}/util/List_Div_Shuf $refer_list $CPU_num $prot
-	retval=$?
-	if [ "$retval" != "0" ]
+	OUT=$?
+	if [ $OUT -ne 0 ]
 	then
+		echo "${LOCAL_HOME}/util/List_Div_Shuf $refer_list $CPU_num $prot" >&2
 		exit 1
 	fi
 	#--| run DeepAlign for these N-cut refer_list
@@ -478,9 +479,10 @@ then
 	#--------- preliminary ----------#
 	#--| cut refer_list into N threads
 	${LOCAL_HOME}/util/List_Div_Shuf $data_list $CPU_num $prot
-	retval=$?
-	if [ "$retval" != "0" ]
+	OUT=$?
+	if [ $OUT -ne 0 ]
 	then
+		echo "${LOCAL_HOME}/util/List_Div_Shuf $data_list $CPU_num $prot" >&2
 		exit 1
 	fi
 	#--| run DeepAlign for these N-cut refer_list
@@ -523,10 +525,10 @@ fi
 
 #================== Part 1.3 re-align topK ==================# 
 
-#-- determine topK to output the detailed rank ----#
 rel_topk=$topK
-if [ 1 -eq "$(echo "$pval > 0" | bc)" ]  #--| consider topK by p-value 
+if [ $rel_topk -gt 0 ]
 then
+	#--------- consider topK by p-value ------#
 	pval_para=${output_root}/${relnam}_${refer_relnam}.pvalue_param
 	sorted_score=${output_root}/${relnam}_${data_relnam}.SortedScore
 	sorted_file=${prot}/${relnam}_${data_relnam}.SortedScore_${sort_col}
@@ -537,24 +539,19 @@ then
 		rel_topk=$topk_from_pval
 	fi
 	rm -f $sorted_file
-fi
-#-> topK_list
-topk_list=${output_root}/${relnam}_${data_relnam}_topKlist
-head -n $rel_topk ${output_root}/${relnam}_${data_relnam}.SortedScore | awk '{print $1}' > $topk_list
-topk_align=${output_root}/${relnam}_${data_relnam}_topKalign
-mkdir -p $topk_align
-
-
-#------------- re-align TopK -------------#
-if true 
-then
 
 	#--------- preliminary ----------#
+	#--| generate topKlist
+	topk_list=${output_root}/${relnam}_${data_relnam}_topKlist
+	head -n $rel_topk ${output_root}/${relnam}_${data_relnam}.SortedScore | awk '{print $1}' > $topk_list
+	topk_align=${output_root}/${relnam}_${data_relnam}_topKalign
+	mkdir -p $topk_align
 	#--| cut refer_list into N threads
 	${LOCAL_HOME}/util/List_Div_Shuf $topk_list $CPU_num $prot
-	retval=$?
-	if [ "$retval" != "0" ]
+	OUT=$?
+	if [ $OUT -ne 0 ]
 	then
+		echo "${LOCAL_HOME}/util/List_Div_Shuf $topk_list $CPU_num $prot" >&2
 		exit 1
 	fi
 	#--| run DeepAlign for these N-cut refer_list
@@ -629,24 +626,22 @@ then
 	done
 	sort -g -r -k ${sort_col} ${prot}/${relnam}_${data_relnam}.TopKScore > ${output_root}/${relnam}_${data_relnam}.SortedTopKScore
 	rm -f ${prot}/${relnam}_${data_relnam}.TopKScore
-fi
 
-
-#================== Part 1.4 generate the detailed summary file ==================#
-
-#-- output the result file ---#
-if [ "$output_file" != "-1" ]     #-> need to output the detailed summary file
-then
-	rank_simp=${output_file}_simp
-	rank_file=${output_root}/${relnam}_${data_relnam}.SortedTopKScore
-	rank_root=${output_root}/${relnam}_${data_relnam}_topKalign
-	pval_para=${output_root}/${relnam}_${refer_relnam}.pvalue_param
-	run_command="$0 $@"
-	${LOCAL_HOME}/util/DeepSearch_Rank $relnam $rank_file $rank_root $pval_para $output_file "${run_command}" $pval $data_len $rel_topk > $rank_simp
-	retval=$?
-	if [ "$retval" != "0" ]
+	#--| output the result file
+	if [ "$output_file" != "-1" ]     #-> need to output the detailed summary file
 	then
-		exit 1
+		rank_simp=${output_file}_simp
+		rank_file=${output_root}/${relnam}_${data_relnam}.SortedTopKScore
+		rank_root=${output_root}/${relnam}_${data_relnam}_topKalign
+		pval_para=${output_root}/${relnam}_${refer_relnam}.pvalue_param
+		run_command="$0 $@"
+		${LOCAL_HOME}/util/DeepSearch_Rank $relnam $rank_file $rank_root $pval_para $output_file "${run_command}" $pval $data_len $rel_topk > $rank_simp
+		OUT=$?
+		if [ $OUT -ne 0 ]
+		then
+			echo "${LOCAL_HOME}/util/DeepSearch_Rank $relnam $rank_file $rank_root $pval_para $output_file" >&2
+			exit 1
+		fi
 	fi
 fi
 
