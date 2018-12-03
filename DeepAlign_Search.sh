@@ -65,8 +65,8 @@ function usage()
 	echo ""
 	echo "***** other arguments *****"
 	echo "-s sort              : screen output is sorted with respect to a specific column. [default = 8 for DeepScore] "
-	echo "   tnam qnam tlen qlen -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut"
-	echo "      1    2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20"
+	echo "   tnam qnam tlen qlen -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut uGDT"
+	echo "      1    2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20   21"
 	echo ""
 	echo "-S options           : the arguments for DeepAlign, such as '-n -1' [default = null]"
 	echo ""
@@ -180,8 +180,8 @@ output_file=""
 #--| other arguments
 sort_col=8                      #-> sort by DeepScore
 #---- screen output format -----#
-#   tnam qnam tlen qlen -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut
-#      1    2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20
+#   tnam qnam tlen qlen -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut uGDT
+#      1    2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20   21
 options=""
 #--| home directory
 home=$RXTHREAD_HOME/DeepAlign_Package         #-> home directory
@@ -314,7 +314,7 @@ data_relnam=${data_fulnam%.*}
 
 #-- data length ---#
 data_len=`wc $data_list | awk '{print $1}'`
-if [ $topK -le 0 ] || [ $topK -ge $data_len ]
+if [ $topK -lt 0 ] || [ $topK -gt $data_len ]
 then
 	topK=$data_len
 fi

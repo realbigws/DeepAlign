@@ -340,8 +340,8 @@ string detect_alignment_range(string path,pair<int,int> & template_range,pair<in
 //-> format
 /*
 #---- screen output format -----#
-#   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut
-#       1     2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20
+#   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut uGDT
+#       1     2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20   21
 */
 int Load_RankSimp_File(string &filename, vector <string> &temp_rank, vector <vector <double> > &temp_score)
 {

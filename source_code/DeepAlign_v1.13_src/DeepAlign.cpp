@@ -2076,7 +2076,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"#----- Distance cutoff value is %lf\n",Distance_Cutoff);
 		fin_tmp_str+=ws_command;
-		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA\n");
+		sprintf(ws_command,"# BLOSUM CLESUM DeepScore SeqID LALI RMSD(A) TMscore MAXSUB GDT_TS GDT_HA uGDT\n");
 		fin_tmp_str+=ws_command;
 		sprintf(ws_command,"  %6d %6d %9.2f %5d %4d %7.3f %7.3f %6.3f %6.3f %6.3f %.3f\n",
 			fin_blosum,fin_clesum,fin_wms,fin_seqid,fin_lali,fin_rms,fin_tms,fin_maxsub,fin_gdt,fin_gdtha,fin_ugdt);
@@ -2659,7 +2659,7 @@ void Usage(void)
 	fprintf(stderr,"-B mask_2:              The residue mask region for the 2nd input protein. \n");
 	fprintf(stderr,"-K strict_check:        Enforce that all mask regions shall be aligned above a ratio. (set 0 as NOT to check by default) \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
-	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
+	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut uGDT \n");
 
 }
 

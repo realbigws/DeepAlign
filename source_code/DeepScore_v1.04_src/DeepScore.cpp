@@ -2656,7 +2656,7 @@ void Usage(void)
 	fprintf(stderr,"                       [1], use typical approach to calculate the TMscore. (Set as default) \n");
 	fprintf(stderr,"                        2,  use simplifed approach to calculate the TMscore. \n\n");
 	fprintf(stderr,"Simple screenout description (please refer to README file for more details):\n");
-	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut \n");
+	fprintf(stderr,"   name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCut uGDT \n");
 
 }
 
