@@ -768,7 +768,7 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 		ami2.clear();
 		score_out.clear();
 		//output related
-		char ws_output[60000];
+		char ws_output[300000];
 		string ws_output_str;
 		ws_output_str.clear();
 		//[real process]
@@ -1639,7 +1639,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	}
 	if(ws_ret==0)
 	{
-		char ws_command[30000];
+		char ws_command[300000];
 		double zerod=0;
 		int zeroi=0;
 		sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.3f\n",
@@ -1655,7 +1655,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		int mask_ret=Mask_Region_StrictCheck(clepaps,Mask_StrickCheck);
 		if(mask_ret==0)
 		{
-			char ws_command[30000];
+			char ws_command[300000];
 			double zerod=0;
 			int zeroi=0;
 			sprintf(ws_command,"%s %s %4d %4d -> %6d %6d %9.2f -> %4d %7.3f %7.3f -> %6.3f %6.3f %6.3f -> %5d %5d %6.3f %.3f\n",
@@ -1684,7 +1684,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		int wsk,wsi;
 		int wssize=(int)clepaps.FM_align_tot.size();
 		int relout=wssize<10?wssize:10;
-		char www_nam[30000];
+		char www_nam[300000];
 		Kabsch kabsch;
 		string TER="TER                                                                             ";
 		string END="END                                                                             ";
@@ -2180,7 +2180,7 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 		return 0;
 	}
 	ws_lali=clepaps.FM_align_tot[0].lali;
-	char ws_command[30000];
+	char ws_command[300000];
 	sprintf(ws_command,"%s %s %4d %4d -> %5.3f %4d -> %lf \n",wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,ws_ret,ws_lali,ws_ret*ws_lali);
 	output=ws_command;
 	ret_val=ws_ret;
@@ -2709,7 +2709,7 @@ int main(int argc,char **argv)
 			exit(-1);
 		}
 		//maxsize
-		int DEEPALIGN_MAXSIZE=3000;
+		int DEEPALIGN_MAXSIZE=PROT_MAX_NUM;
 		int SIMPLY_LOAD=1;  // [1]: simply load; 0: complex load, ( only for Database_Search )
 		//job style
 		int job_style_search=0;

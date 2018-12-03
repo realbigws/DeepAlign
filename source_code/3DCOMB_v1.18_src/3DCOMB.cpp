@@ -528,7 +528,7 @@ void WS_NEO_BLOMAPS(string &list,int totnum,string &outnam,string &outroot)
 		if(WS_OUTPUT_TYPE>0)
 		{
 			FILE *fp;
-			char www_nam[30000];
+			char www_nam[300000];
 			if(WS_OUTPUT_TYPE>=2)sprintf(www_nam,"%s/%s.%d",outroot.c_str(),outnam.c_str(),k);
 			else sprintf(www_nam,"%s/%s",outroot.c_str(),outnam.c_str());
 			string rel_outnam=www_nam;
@@ -811,8 +811,8 @@ int main(int argc,char **argv)
 			fprintf(stderr,"3DCOMB input file failed: too few number %d\n",input_num);
 			exit(-1);
 		}
-		WS_Init_Struc(input_num,6000);
-		int max_len=WS_Input_List(input_name,input_num,6000);
+		WS_Init_Struc(input_num,PROT_MAX_NUM*2);
+		int max_len=WS_Input_List(input_name,input_num,PROT_MAX_NUM*2);
 		if(max_len<0)
 		{
 			fprintf(stderr,"3DCOMB input file failed!\n");

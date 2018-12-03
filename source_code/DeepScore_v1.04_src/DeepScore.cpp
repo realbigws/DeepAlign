@@ -1488,7 +1488,7 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 		ami2.clear();
 		score_out.clear();
 		//output related
-		char ws_output[60000];
+		char ws_output[300000];
 		string ws_output_str;
 		ws_output_str.clear();
 		//[real process]
@@ -1976,7 +1976,7 @@ void Output_PyMol_Script(FILE *fws,int *AFP_Cor)
 	string wsan="select aan, chain A and not ";
 	string wsbn="select bbn, chain B and not ";
 	string temp;
-	char command[30000];
+	char command[300000];
 	if(totnum>1)
 	{
 		for(k=1;k<=totnum;k++)
@@ -2296,7 +2296,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	Kabsch kabsch;
 	if(out_file!="")
 	{
-		char www_nam[30000];
+		char www_nam[300000];
 		string TER="TER                                                                             ";
 		string END="END                                                                             ";
 		string outnam=out_file;
