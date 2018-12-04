@@ -556,10 +556,17 @@ then
 		#--| generate topKlist
 		head -n $rel_topk ${output_root}/${relnam}_${data_relnam}.SortedScore | awk '{print $1}' > $topk_list
 	else
-		#--| generate topK
-		rel_topk=$data_len
-		#--| generate topKlist
-		cp $data_list $topk_list
+		if [ $rel_topk -eq -1 ]      #-> scan ALL input list without filter
+		then
+			#--| generate topK
+			rel_topk=$data_len
+			#--| generate topKlist
+			cp $data_list $topk_list
+		else                         #-> scan ALL filtered list
+			#--| generate topK
+			filter_len=`wc $topk_list | awk '{print $1}'`
+			rel_topk=$filter_len
+		fi
 	fi
 
 	#--| cut refer_list into N threads
