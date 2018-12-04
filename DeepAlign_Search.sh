@@ -560,10 +560,10 @@ then
 		then
 			#--| generate topK
 			rel_topk=$data_len
-			#--| generate topKlist
 			cp $data_list $topk_list
 		else                         #-> scan ALL filtered list
 			#--| generate topK
+			awk '{print $1}' ${output_root}/${relnam}_${data_relnam}.SortedScore > $topk_list
 			filter_len=`wc $topk_list | awk '{print $1}'`
 			rel_topk=$filter_len
 		fi
