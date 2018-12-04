@@ -2181,10 +2181,6 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 		clepaps.ZM_TopL=2;         //only consider top2
 		ws_ret=clepaps.FM_Align_Lite(TM_MOL1,TM_MOL2,TM_MOLN1,TM_MOLN2,TM_ALIGNMENT,norm_len,norm_d0); //fast version
 	}
-	if(ws_ret<=0)
-	{
-		return 0;
-	}
 
 	//-------- return original parameters ------//__181204__//
 	clepaps.FAST_Chk=FAST_Chk_;
@@ -2192,6 +2188,11 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 	clepaps.CUR_MaxJ_thres=CUR_MaxJ_thres_;
 	//------------------------------------------//__181204__//
 
+	//------- result analysis -------//
+	if(ws_ret<=0)
+	{
+		return 0;
+	}
 	ws_lali=clepaps.FM_align_tot[0].lali;
 	char ws_command[300000];
 	sprintf(ws_command,"%s %s %4d %4d -> %5.3f %4d -> %lf \n",wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,ws_ret,ws_lali,ws_ret*ws_lali);
