@@ -6,11 +6,11 @@
 #include "Mol_Out.h"
 #include "CLEFAPS_Main.h"
 #include "CLEPAPS_Out.h"
-#include "reference_nam.h"
-#include "reference_mca.h"
-#include "reference_mcb.h"
-#include "reference_ami.h"
-#include "reference_cle.h"
+//#include "reference_nam.h"
+//#include "reference_mca.h"
+//#include "reference_mcb.h"
+//#include "reference_ami.h"
+//#include "reference_cle.h"
 #include "Fast_Sort.h"
 #include "Confo_Beta.h"
 #define REFERENCE_NUM 1814
@@ -299,7 +299,7 @@ void Extract_Alignment(string &nam1_seq,string &nam1_pdb,string &nam2_seq,string
 
 
 //=========== blosum calculate ============//
-double WS_Local_Para=10;
+double Local_Para=10;
 //=================//
 //--Ori_BLOSUM----//
 //===============//
@@ -962,7 +962,7 @@ FYTEGLDVDQVIATVESLELKDEVLYFGKLGIFWGKFSEESYSKT---------------
 #end
 */
 // PIR_Type -> [0] both structure, [1] first structure, [2] second structure
-void WS_PIR_Output(FILE *fp,char *ami1,char *ami2,int *ali1,int *ali2,int moln1,int moln2,
+void PIR_Output(FILE *fp,char *ami1,char *ami2,int *ali1,int *ali2,int moln1,int moln2,
 				   string &nam1,string &nam2,char c1,char c2,int PIR_Type)
 {
 	//ali2->ali1
@@ -1065,7 +1065,7 @@ void WS_PIR_Output(FILE *fp,char *ami1,char *ami2,int *ali1,int *ali2,int moln1,
 	}
 	fprintf(fp,"*\n\n");
 }
-void WS_PIR_Output_II(FILE *fp,char *seq1,char *seq2,
+void PIR_Output_II(FILE *fp,char *seq1,char *seq2,
 				   string &nam1,string &nam2,char c1,char c2,int PIR_Type)
 {
 	//alignment->output
@@ -1100,8 +1100,8 @@ void WS_PIR_Output_II(FILE *fp,char *seq1,char *seq2,
 	fprintf(fp,"*\n\n");
 }
 /*
-//============== WS_DALI_Score Calc =============//
-double WS_DALI_Score_Calc(XYZ *mol1,XYZ *mol2,int moln)
+//============== DALI_Score Calc =============//
+double DALI_Score_Calc(XYZ *mol1,XYZ *mol2,int moln)
 {
 	int i,j;
 	double dist1,dist2,dist_ave;
@@ -1126,7 +1126,7 @@ double WS_DALI_Score_Calc(XYZ *mol1,XYZ *mol2,int moln)
 	}
 	return dali_tot_score;
 }
-double WS_DALI_Score_Total(XYZ *mol1,XYZ *mol2,int moln1,int moln2,int *ali2)
+double DALI_Score_Total(XYZ *mol1,XYZ *mol2,int moln1,int moln2,int *ali2)
 {
 	XYZ *ww1=new XYZ[moln1];
 	XYZ *ww2=new XYZ[moln2];
@@ -1142,15 +1142,15 @@ double WS_DALI_Score_Total(XYZ *mol1,XYZ *mol2,int moln1,int moln2,int *ali2)
 		ww2[count]=mol2[jj];
 		count++;
 	}
-	double score=WS_DALI_Score_Calc(ww1,ww2,count);
+	double score=DALI_Score_Calc(ww1,ww2,count);
 	delete [] ww1;
 	delete [] ww2;
 	return score;
 }
 */
 
-//============= WS_Weight_Matrix_Built ===============//__110815__//
-void WS_Linear_Transform(double *in_mat,int moln1,int moln2,double *out_mat)
+//============= Weight_Matrix_Built ===============//__110815__//
+void Linear_Transform(double *in_mat,int moln1,int moln2,double *out_mat)
 {
 	int i;
 	int totnum=moln1*moln2;
@@ -1170,7 +1170,7 @@ void WS_Linear_Transform(double *in_mat,int moln1,int moln2,double *out_mat)
 		out_mat[i]=1.0*(wscur-wsmin)/(wsmax-wsmin);
 	}
 }
-void WS_Weight_Matrix_Built_WS(char *ami1,char *cle1,char *ami2,char *cle2,double *wei_out,
+void Weight_Matrix_Built_WS(char *ami1,char *cle1,char *ami2,char *cle2,double *wei_out,
 							   double ws1,double ws2,double Local_Para)
 {
 	Bioinfo_Code bioinfo_code(2);
@@ -1239,7 +1239,7 @@ void WS_Weight_Matrix_Built_WS(char *ami1,char *cle1,char *ami2,char *cle2,doubl
 }
 
 //---------------- superimpose_fullatom --------------------//
-void WS_Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue *out,double *rotmat)
+void Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue *out,double *rotmat)
 {
 	int i,k;
 	int num;
@@ -1273,7 +1273,7 @@ void WS_Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue
 }
 
 //------------- generate CB --------------//
-void WS_Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,char *cle,XYZ *mol,XYZ *mcb)
+void Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,char *cle,XYZ *mol,XYZ *mcb)
 {
 	int k;
 	int ws_correct; //default: OK
@@ -1305,7 +1305,7 @@ void WS_Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,c
 	{
 		strcpy(tmp_ami,ami);
 		for(k=0;k<moln;k++)if(tmp_ami[k]=='G')tmp_ami[k]='A';
-		confo_beta.WS_Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
+		confo_beta.Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
 		for(k=0;k<moln;k++)if(ws_reco[k]==0)mcb[k]=tmp_mcb[k];
 	}
 }
@@ -1499,8 +1499,8 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 	{
 		double rate1=1.0;
 		double rate2=0.1;
-		WS_Weight_Matrix_Built_WS(TM_AMI1,TM_CLE1,TM_AMI2,TM_CLE2,wswei,rate1,rate2,WS_Local_Para);
-		WS_Linear_Transform(wswei,TM_MOLN1,TM_MOLN2,wswei);
+		Weight_Matrix_Built_WS(TM_AMI1,TM_CLE1,TM_AMI2,TM_CLE2,wswei,rate1,rate2,Local_Para);
+		Linear_Transform(wswei,TM_MOLN1,TM_MOLN2,wswei);
 		clepaps.TMali_Weight=wswei;
 		if(Score_Func==4)clepaps.TM_Wei_Score=1;
 		if(Score_Func==5)clepaps.TM_Vect_Score=0;
@@ -1583,7 +1583,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 		{
 			clepaps.TM_ADDITION=0;     //no additional TMalign procedure !! //__110720__//
 			clepaps.REFINE_ITER=3;     //only three iteration
-			clepaps.WS_Refine_Cut=0.5; //50% cutoff to the maximal
+			clepaps.Refine_Cut=0.5; //50% cutoff to the maximal
 			clepaps.ZM_Upper_Max=50*QualityDegree;   //only consider initial 50 SFP_H as TopJ
 			clepaps.ZM_Lower_Max=10*QualityDegree;   //only consider initial 10 SFP_H as TopJ
 			clepaps.ZM_TopK=10+QualityDegree-1;      //only consider TopK as 10
@@ -1743,7 +1743,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 			{
 				if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 				{
-					WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
+					Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
 					mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',1);
 					fprintf(fp,"%s\n",TER.c_str());
 					mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',1);
@@ -1934,7 +1934,7 @@ int DeepAlign_main(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string &o
 				{
 					if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 					{
-						WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
+						Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
 						mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',1);
 						fprintf(fp,"%s\n",TER.c_str());
 						mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',1);
@@ -2155,7 +2155,13 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 		}
 		norm_d0=clepaps.Calc_TM_d0_Simp(norm_len);
 	}
-	
+
+	//-------- record original parameters ------//__181204__//
+	int FAST_Chk_=clepaps.FAST_Chk;
+	int REF_Strategy_=clepaps.REF_Strategy;
+	double CUR_MaxJ_thres_=clepaps.CUR_MaxJ_thres;
+	//------------------------------------------//__181204__//
+
 	//-------- speed up -------//
 	double ws_ret;
 	int ws_lali;
@@ -2168,7 +2174,7 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 	{
 		clepaps.TM_ADDITION=0;     //no additional TMalign procedure !! //__110720__//
 		clepaps.REFINE_ITER=3;     //only three iteration
-		clepaps.WS_Refine_Cut=0.5; //50% cutoff to the maximal
+		clepaps.Refine_Cut=0.5; //50% cutoff to the maximal
 		clepaps.ZM_Upper_Max=50;   //only consider initial 50 SFP_H as TopJ upper bound
 		clepaps.ZM_Lower_Max=10;   //only consider initial 10 SFP_H as TopJ lower bound
 		clepaps.ZM_TopK=10;        //only consider TopK as 10
@@ -2179,18 +2185,27 @@ int DeepAlign_search(CLEFAPS_Main &clepaps,string &wsnam1,string &wsnam2,string 
 	{
 		return 0;
 	}
+
+	//-------- return original parameters ------//__181204__//
+	clepaps.FAST_Chk=FAST_Chk_;
+	clepaps.REF_Strategy=REF_Strategy_;
+	clepaps.CUR_MaxJ_thres=CUR_MaxJ_thres_;
+	//------------------------------------------//__181204__//
+
 	ws_lali=clepaps.FM_align_tot[0].lali;
 	char ws_command[300000];
 	sprintf(ws_command,"%s %s %4d %4d -> %5.3f %4d -> %lf \n",wsnam1.c_str(),wsnam2.c_str(),TM_MOLN1,TM_MOLN2,ws_ret,ws_lali,ws_ret*ws_lali);
 	output=ws_command;
 	ret_val=ws_ret;
+
+	//----- return -----//
 	return 1;
 }
 
 //========================= list process =========================//
 //----- load pair_list -----//__130630__//
 //-> in format <temp targ> [range1;range2;]
-int WS_Get_PairList(string list,vector <string> &temp_rec,vector <string> &targ_rec,
+int Get_PairList(string list,vector <string> &temp_rec,vector <string> &targ_rec,
 	vector <string> &temp_rec_addi,vector <string> &targ_rec_addi)
 {
 	temp_rec.clear();
@@ -2228,7 +2243,7 @@ int WS_Get_PairList(string list,vector <string> &temp_rec,vector <string> &targ_
 
 //----- load single_list -----//__130630__//
 //-> in format <temp> [range;]
-int WS_Get_TempList(string list,vector <string> &temp_rec,vector <string> &temp_rec_addi)
+int Get_TempList(string list,vector <string> &temp_rec,vector <string> &temp_rec_addi)
 {
 	temp_rec.clear();
 	temp_rec_addi.clear();
@@ -2270,7 +2285,7 @@ int WS_Get_TempList(string list,vector <string> &temp_rec,vector <string> &temp_
 }
 
 //---- transfer float[][] to XYZ format ----//
-void WS_Transfer_Float_To_XYZ(float *input,XYZ *output,int moln)
+void Transfer_Float_To_XYZ(float *input,XYZ *output,int moln)
 {
 	int i;
 	for(i=0;i<moln;i++)
@@ -2282,16 +2297,15 @@ void WS_Transfer_Float_To_XYZ(float *input,XYZ *output,int moln)
 }
 
 //---- calculate reference score -----//
-
-int WS_Calculate_Reference_Score(CLEFAPS_Main &clepaps,double tms_cut,
+int Calculate_Reference_Score(CLEFAPS_Main &clepaps,double tms_cut,
 	string &wsnam1,string &wsnam2,int ref_id,string &ret_str,double &ret_val)
 {
 	//assign mol1
 	TM_MOLN1=(int)reference_ami[ref_id].length();
 	strcpy(TM_AMI1,reference_ami[ref_id].c_str());
 	strcpy(TM_CLE1,reference_cle[ref_id].c_str());
-	WS_Transfer_Float_To_XYZ(reference_mca[ref_id],TM_MOL1,TM_MOLN1);
-	WS_Transfer_Float_To_XYZ(reference_mcb[ref_id],TM_MCB1,TM_MOLN1);
+	Transfer_Float_To_XYZ(reference_mca[ref_id],TM_MOL1,TM_MOLN1);
+	Transfer_Float_To_XYZ(reference_mcb[ref_id],TM_MCB1,TM_MOLN1);
 	//calculate score
 	int retv=DeepAlign_search(clepaps,wsnam1,wsnam2,ret_str,ret_val,tms_cut);
 	return retv;
@@ -2336,7 +2350,7 @@ char WWW_Three2One_III(const char *input)
 		default:return 'X';
 	}
 }
-int WS_Simply_Load_PDB(string &pdbfile,XYZ *mca,XYZ *mcb,char *ami) //->from .pdb file
+int Simply_Load_PDB(string &pdbfile,XYZ *mca,XYZ *mcb,char *ami) //->from .pdb file
 {
 	//--- list for mapping ---//
 	map<string, int > ws_mapping;
@@ -2419,7 +2433,7 @@ next:
 	if(count==cb_count)return count;
 	else return -1*count;
 }
-void WS_Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ *mol,XYZ *mcb)
+void Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ *mol,XYZ *mcb)
 {
 	int k;
 	double dist;
@@ -2446,7 +2460,7 @@ void WS_Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ
 	{
 		strcpy(tmp_ami,ami);
 		for(k=0;k<moln;k++)if(tmp_ami[k]=='G')tmp_ami[k]='A';
-		confo_beta.WS_Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
+		confo_beta.Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
 		for(k=0;k<moln;k++)if(ws_reco[k]==0)mcb[k]=tmp_mcb[k];
 	}
 }
@@ -3208,8 +3222,8 @@ int main(int argc,char **argv)
 			getBaseName(name1,wsnam1,'/','.');
 			getBaseName(name2,wsnam2,'/','.');
 			//-> process CB
-			WS_Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
-			WS_Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
+			Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+			Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
 			clepaps.TM_cb1=TM_MCB1;
 			clepaps.TM_cb2=TM_MCB2;
 			//-> real process
@@ -3245,7 +3259,7 @@ int main(int argc,char **argv)
 			vector <string> targ_list;
 			vector <string> temp_list_addi;
 			vector <string> targ_list_addi;
-			int size=WS_Get_PairList(template_list,temp_list,targ_list,temp_list_addi,targ_list_addi);
+			int size=Get_PairList(template_list,temp_list,targ_list,temp_list_addi,targ_list_addi);
 			TM_Align_Init_WS(DEEPALIGN_MAXSIZE,DEEPALIGN_MAXSIZE);
 			CLEFAPS_Main clepaps(DEEPALIGN_MAXSIZE);
 			Confo_Beta confo_beta(DEEPALIGN_MAXSIZE);
@@ -3288,8 +3302,8 @@ int main(int argc,char **argv)
 				getBaseName(name1,wsnam1,'/','.');
 				getBaseName(name2,wsnam2,'/','.');
 				//-> process CB
-				WS_Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
-				WS_Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
+				Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+				Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
 				clepaps.TM_cb1=TM_MCB1;
 				clepaps.TM_cb2=TM_MCB2;
 				//-> real process
@@ -3348,7 +3362,7 @@ int main(int argc,char **argv)
 			//-> get base_name
 			getBaseName(name2,wsnam2,'/','.');
 			//-> process CB
-			WS_Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
+			Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
 			clepaps.TM_cb2=TM_MCB2;
 			//-> load list
 			vector <string> temp_list;
@@ -3380,7 +3394,7 @@ int main(int argc,char **argv)
 					if(verb_total==2)fprintf(stderr,"process@: ");
 					for(int i=0;i<REFERENCE_NUM;i++)
 					{
-						retv=WS_Calculate_Reference_Score(clepaps,CLE_Filter_thres/2,
+						retv=Calculate_Reference_Score(clepaps,CLE_Filter_thres/2,
 							reference_nam[i],wsnam2,i,ret_str,ret_val);
 						if(retv==1)
 						{
@@ -3443,7 +3457,7 @@ int main(int argc,char **argv)
 				//load list first
 				vector <string> temp_list_ori;
 				vector <string> temp_list_addi_ori;
-				int totnum=WS_Get_TempList(template_list,temp_list_ori,temp_list_addi_ori);
+				int totnum=Get_TempList(template_list,temp_list_ori,temp_list_addi_ori);
 				//-> pre-process list
 				int outsize=totnum/100;
 				if(outsize<=2)outsize=2;
@@ -3458,7 +3472,7 @@ int main(int argc,char **argv)
 					}
 					else
 					{
-						retv=WS_Simply_Load_PDB(name1,TM_MOL1,TM_MCB1,TM_AMI1);
+						retv=Simply_Load_PDB(name1,TM_MOL1,TM_MCB1,TM_AMI1);
 						TM_MOLN1=abs(retv);
 						confo_lett.btb_ori(0,0,0,TM_MOLN1,TM_MOL1,TM_CLE1);
 						TM_CLE1[TM_MOLN1]='\0';
@@ -3513,7 +3527,7 @@ int main(int argc,char **argv)
 			}
 			else
 			{
-				size=WS_Get_TempList(template_list,temp_list,temp_list_addi);
+				size=Get_TempList(template_list,temp_list,temp_list_addi);
 			}
 			//proc templist
 			int outsize=size/100;
@@ -3533,7 +3547,7 @@ int main(int argc,char **argv)
 				}
 				else
 				{
-					retv=WS_Simply_Load_PDB(name1,TM_MOL1,TM_MCB1,TM_AMI1);
+					retv=Simply_Load_PDB(name1,TM_MOL1,TM_MCB1,TM_AMI1);
 					TM_MOLN1=abs(retv);
 				}
 				if(retv==0)
@@ -3552,13 +3566,13 @@ int main(int argc,char **argv)
 				//-> process CB
 				if(SIMPLY_LOAD==0)
 				{
-					WS_Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+					Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
 				}
 				else
 				{
 					confo_lett.btb_ori(0,0,0,TM_MOLN1,TM_MOL1,TM_CLE1);
 					TM_CLE1[TM_MOLN1]='\0';
-					WS_Generate_CB_Simp(confo_beta,TM_MOLN1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+					Generate_CB_Simp(confo_beta,TM_MOLN1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
 
 				}
 				clepaps.TM_cb1=TM_MCB1;

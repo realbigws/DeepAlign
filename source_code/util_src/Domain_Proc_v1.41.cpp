@@ -211,7 +211,7 @@ void Fasta_Output(string &nam1_full,string &nam2_full,int *wsrec,int size,
 
 
 //-------- pick alignment -----//
-void WS_Get_Alignment(vector<pair<int, int> > &in,int *wsrec,int *wali1,int *wali2)
+void Get_Alignment(vector<pair<int, int> > &in,int *wsrec,int *wali1,int *wali2)
 {
 	int i,j;
 	int pos;
@@ -236,7 +236,7 @@ void WS_Get_Alignment(vector<pair<int, int> > &in,int *wsrec,int *wali1,int *wal
 		}
 	}
 }
-void WS_Pick_Alignment(vector<pair<int, int> > &in, int *wali1, int *wali2 ,
+void Pick_Alignment(vector<pair<int, int> > &in, int *wali1, int *wali2 ,
 	int moln1,int moln2,char *ami1,char *ami2,
 	vector <string> &out1,vector <string> &out2,
 	vector <int> &start1,vector <int> &start2,
@@ -386,8 +386,8 @@ else   // simple
 			break;
 		}
 	}
-	if(start<15)start=0;           //-> modified by WS //__130430__//
-	if(end>=moln2-15)end=moln2-1;  //-> modified by WS //__130430__//
+	if(start<15)start=0;           //-> modified at //__130430__//
+	if(end>=moln2-15)end=moln2-1;  //-> modified at //__130430__//
 	for(i=start;i<=end;i++)
 	{
 		wali2[i]=ali2[i];
@@ -517,7 +517,7 @@ else   // simple
 }
 
 //------- main proc -------//
-void WS_Main_Proc(string &fasta_file,int cover,int thres,string &out_file,int dom_num=1,int ONEorTWO=0,
+void Main_Proc(string &fasta_file,int cover,int thres,string &out_file,int dom_num=1,int ONEorTWO=0,
 	int SIMP1=0,int SIMP2=0)
 {
 	//---- load alignment ----//
@@ -554,12 +554,12 @@ void WS_Main_Proc(string &fasta_file,int cover,int thres,string &out_file,int do
 	int seq_start1,seq_start2;
 	int *wali1=new int[moln1];
 	int *wali2=new int[moln2];
-	WS_Pick_Alignment(alignment,wali1,wali2,moln1,moln2,ami1,ami2,out1,out2,start1,start2,seq_start1,seq_start2,cover,thres,SIMP1,SIMP2);
+	Pick_Alignment(alignment,wali1,wali2,moln1,moln2,ami1,ami2,out1,out2,start1,start2,seq_start1,seq_start2,cover,thres,SIMP1,SIMP2);
 
 	//--- get alignment --//
 	int totnum=(int)alignment.size();
 	int *wsrec=new int[totnum];
-	WS_Get_Alignment(alignment,wsrec,wali1,wali2);
+	Get_Alignment(alignment,wsrec,wali1,wali2);
 
 	//--- output ----//
 	FILE *fp;
@@ -716,7 +716,7 @@ int main(int argc,char **argv)
 		int ONEorTWO=atoi(argv[6]);
 		int SIMP1=0;    //-> template use complex domain cut
 		int SIMP2=1;    //-> sequence use simple domain cut
-		WS_Main_Proc(fasta_file,cover,thres,out_file,dom_num,ONEorTWO,SIMP1,SIMP2);
+		Main_Proc(fasta_file,cover,thres,out_file,dom_num,ONEorTWO,SIMP1,SIMP2);
 		exit(0);
 	}
 }

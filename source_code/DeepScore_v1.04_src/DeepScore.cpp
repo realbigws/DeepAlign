@@ -209,20 +209,20 @@ int WWW_Advance_Align_Dyna_Prog_Double(int n1,int n2,const vector<double> &score
 		M[i].resize(m*n);
 	}
 	//init()
-	double WS_MIN=-1000000;
+	double IN_MIN=-1000000;
 	D[_S_][0*DP_maximal+ 0] = -1;
 	D[_H_][0*DP_maximal+ 0] = -1;
 	D[_V_][0*DP_maximal+ 0] = -1;
 	M[_S_][0*DP_maximal+ 0] = 0;
-	M[_H_][0*DP_maximal+ 0] = WS_MIN;
-	M[_V_][0*DP_maximal+ 0] = WS_MIN;
+	M[_H_][0*DP_maximal+ 0] = IN_MIN;
+	M[_V_][0*DP_maximal+ 0] = IN_MIN;
 	for (i = 1; i < m; i++) 
 	{
 		D[_S_][i*DP_maximal+ 0] = _V_;
 		D[_H_][i*DP_maximal+ 0] = _V_;
 		D[_V_][i*DP_maximal+ 0] = _V_;
-		M[_S_][i*DP_maximal+ 0] = WS_MIN;
-		M[_H_][i*DP_maximal+ 0] = WS_MIN;
+		M[_S_][i*DP_maximal+ 0] = IN_MIN;
+		M[_H_][i*DP_maximal+ 0] = IN_MIN;
 		M[_V_][i*DP_maximal+ 0] = i*GAP_HEAD1; //-(Params::GAP_OPEN + (i-1)*Params::GAP_EXT);
 	}
 	for (j = 1; j < n; j++) 
@@ -230,9 +230,9 @@ int WWW_Advance_Align_Dyna_Prog_Double(int n1,int n2,const vector<double> &score
 		D[_S_][0*DP_maximal+ j] = _H_;
 		D[_H_][0*DP_maximal+ j] = _H_;
 		D[_V_][0*DP_maximal+ j] = _H_;
-		M[_S_][0*DP_maximal+ j] = WS_MIN;
+		M[_S_][0*DP_maximal+ j] = IN_MIN;
 		M[_H_][0*DP_maximal+ j] = j*GAP_HEAD2; //-(Params::GAP_OPEN + (j-1)*Params::GAP_EXT);
-		M[_V_][0*DP_maximal+ j] = WS_MIN;
+		M[_V_][0*DP_maximal+ j] = IN_MIN;
 	}
 	//fill(firstSeq, secondSeq, distFunc);
 	double gap_open;
@@ -689,12 +689,12 @@ int Ori_BLOSUM_80[21][21]={
 
 
 //BLOSUM_Mapping//--------------ARNDCQEGHILKMFPSTWYVZ
-int Blo_AA_Map_WS[21]=
+int Blo_AA_Map_IN[21]=
 { 0,19, 4, 3, 6, 13,7, 8, 9, 17,11,10,12,2, 18,14,5, 1, 15,16,20};
 //A  V  C  D  E  F  G  H  I  W  K  L  M  N  Y  P  Q  R   S  T  Z
 //0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17  18 19 20
 //Ori_Mapping//-----------------AVCDEFGHIWKLMNYPQRSTZ
-int Ori_AA_Map_WS[26]=
+int Ori_AA_Map_IN[26]=
 { 0,20,2,3,4,5,6,7,8,20,10,11,12,13,20,15,16,17,18,19,20, 1, 9,20,14,20};
 // A B C D E F G H I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
 // 0 1 2 3 4 5 6 7 8  9 10 11 12 14 14 15 16 17 18 19 20 21 22 23 24 25
@@ -704,32 +704,32 @@ int BLOSUM62_Calc(char a,char b)
 {
 	int ii,jj;
 	if(a<'A' || a>'Z')a='Z';
-	ii=Blo_AA_Map_WS[Ori_AA_Map_WS[a-'A']];
+	ii=Blo_AA_Map_IN[Ori_AA_Map_IN[a-'A']];
 	if(b<'A' || b>'Z')b='Z';
-	jj=Blo_AA_Map_WS[Ori_AA_Map_WS[b-'A']];
+	jj=Blo_AA_Map_IN[Ori_AA_Map_IN[b-'A']];
 	return Ori_BLOSUM_62[ii][jj];
 }
 int BLOSUM45_Calc(char a,char b)
 {
 	int ii,jj;
 	if(a<'A' || a>'Z')a='Z';
-	ii=Blo_AA_Map_WS[Ori_AA_Map_WS[a-'A']];
+	ii=Blo_AA_Map_IN[Ori_AA_Map_IN[a-'A']];
 	if(b<'A' || b>'Z')b='Z';
-	jj=Blo_AA_Map_WS[Ori_AA_Map_WS[b-'A']];
+	jj=Blo_AA_Map_IN[Ori_AA_Map_IN[b-'A']];
 	return Ori_BLOSUM_45[ii][jj];
 }
 int BLOSUM80_Calc(char a,char b)
 {
 	int ii,jj;
 	if(a<'A' || a>'Z')a='Z';
-	ii=Blo_AA_Map_WS[Ori_AA_Map_WS[a-'A']];
+	ii=Blo_AA_Map_IN[Ori_AA_Map_IN[a-'A']];
 	if(b<'A' || b>'Z')b='Z';
-	jj=Blo_AA_Map_WS[Ori_AA_Map_WS[b-'A']];
+	jj=Blo_AA_Map_IN[Ori_AA_Map_IN[b-'A']];
 	return Ori_BLOSUM_80[ii][jj];
 }
 
 //================ clesum calculate =============//
-int Ori_CLESUM_WS[18][18]={
+int Ori_CLESUM_IN[18][18]={
 { 73, 20, 13, -17, -25, -20, -6, -45, -31,-23,-19,-11, -2, 10, 25, 35, 16,0}, //A 
 { 20, 51,  7,  13,  15,   7, 13, -96, -74,-57,-50,-12,-13,-11,-12, 42, 12,0}, //B 
 { 13,  7, 53,  21,   3,  20, -4, -77, -56,-43,-33,  0,-12, -5,  3,  4, 29,0}, //C 
@@ -755,7 +755,7 @@ int CLESUM_Calc(char a,char b)
 {
 	if(a<'A' || a>'R')a='R';
 	if(b<'A' || b>'Z')b='R';
-	return Ori_CLESUM_WS[a-'A'][b-'A'];
+	return Ori_CLESUM_IN[a-'A'][b-'A'];
 }
 
 
@@ -839,7 +839,7 @@ int Get_PDB_File_Len(string &pdbfile) //-> only suitable for pdb_BC100 pdb_file
 	//return
 	return count;
 }
-int WS_Simply_Load_PDB(string &pdbfile,XYZ *mca,XYZ *mcb,char *ami) //->from .pdb file
+int Simply_Load_PDB(string &pdbfile,XYZ *mca,XYZ *mcb,char *ami) //->from .pdb file
 {
 	//--- list for mapping ---//
 	map<string, int > ws_mapping;
@@ -928,7 +928,7 @@ next:
 int *ws_reco;
 XYZ *tmp_mcb;
 char *tmp_ami;
-void WS_Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ *mol,XYZ *mcb)
+void Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ *mol,XYZ *mcb)
 {
 	int k;
 	double dist;
@@ -957,11 +957,11 @@ void WS_Generate_CB_Simp(Confo_Beta &confo_beta,int moln,char *ami,char *cle,XYZ
 	{
 		strcpy(tmp_ami,ami);
 		for(k=0;k<moln;k++)if(tmp_ami[k]=='G')tmp_ami[k]='A';
-		confo_beta.WS_Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
+		confo_beta.Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
 		for(k=0;k<moln;k++)if(ws_reco[k]==0)mcb[k]=tmp_mcb[k];
 	}
 }
-void WS_Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,char *cle,XYZ *mol,XYZ *mcb)
+void Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,char *cle,XYZ *mol,XYZ *mcb)
 {
 	int k;
 	int ws_correct; //default: OK
@@ -993,7 +993,7 @@ void WS_Generate_CB(Confo_Beta &confo_beta,int moln,PDB_Residue *pdb,char *ami,c
 	{
 		strcpy(tmp_ami,ami);
 		for(k=0;k<moln;k++)if(tmp_ami[k]=='G')tmp_ami[k]='A';
-		confo_beta.WS_Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
+		confo_beta.Recon_Beta_21(mol,tmp_mcb,moln,tmp_ami,cle);
 		for(k=0;k<moln;k++)if(ws_reco[k]==0)mcb[k]=tmp_mcb[k];
 	}
 }
@@ -1628,7 +1628,7 @@ void FASTA_Output_More(string &ws_output_tot,string &nam1_,string &nam2_,
 	}
 }
 //---------------- superimpose_fullatom --------------------//
-void WS_Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue *out,double *rotmat)
+void Superimpose_FullAtom(Kabsch &kabsch,PDB_Residue *in,int moln,PDB_Residue *out,double *rotmat)
 {
 	int i,k;
 	int num;
@@ -2133,25 +2133,25 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 	}
 	else
 	{
-		WS_Simply_Load_PDB(file1,TM_MOL1,TM_MCB1,TM_AMI1);
-		WS_Simply_Load_PDB(file2,TM_MOL2,TM_MCB2,TM_AMI2);
+		Simply_Load_PDB(file1,TM_MOL1,TM_MCB1,TM_AMI1);
+		Simply_Load_PDB(file2,TM_MOL2,TM_MCB2,TM_AMI2);
 	}
 
 	//construct c_beta
 	Confo_Beta confo_beta(DEEPALIGN_MAXSIZE);
 	if(SIMPLY_LOAD==0)
 	{
-		WS_Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
-		WS_Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
+		Generate_CB(confo_beta,TM_MOLN1,TM_PDB1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+		Generate_CB(confo_beta,TM_MOLN2,TM_PDB2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
 	}
 	else
 	{
 		confo_lett.btb_ori(0,0,0,TM_MOLN1,TM_MOL1,TM_CLE1);
 		TM_CLE1[TM_MOLN1]='\0';
-		WS_Generate_CB_Simp(confo_beta,TM_MOLN1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
+		Generate_CB_Simp(confo_beta,TM_MOLN1,TM_AMI1,TM_CLE1,TM_MOL1,TM_MCB1);
 		confo_lett.btb_ori(0,0,0,TM_MOLN2,TM_MOL2,TM_CLE2);
 		TM_CLE1[TM_MOLN1]='\0';
-		WS_Generate_CB_Simp(confo_beta,TM_MOLN2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
+		Generate_CB_Simp(confo_beta,TM_MOLN2,TM_AMI2,TM_CLE2,TM_MOL2,TM_MCB2);
 	}
 
 	//alignment process
@@ -2329,7 +2329,7 @@ void Main_Process(string &file1,string &range1,string &file2,string &range2,
 		{
 			if(SIMPLY_LOAD==0)  //-> output Full_Atom PDB
 			{
-				WS_Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
+				Superimpose_FullAtom(kabsch,TM_PDB1,TM_MOLN1,TM_PDB_TMP,TM_ROTMAT);
 				mol_out.Output_PDB_III(fp,TM_MOLN1,TM_PDB_TMP,'A',1);
 				fprintf(fp,"%s\n",TER.c_str());
 				mol_out.Output_PDB_III(fp,TM_MOLN2,TM_PDB2,'B',1);

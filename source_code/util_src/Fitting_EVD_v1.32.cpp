@@ -15,7 +15,7 @@ using namespace std;
 
 //--------- read score ------//
 //only read the first part
-void WS_Read_Score(string &infile,vector <double> &out_score)
+void Read_Score(string &infile,vector <double> &out_score)
 {
 	ifstream fin;
 	string buf,temp;
@@ -139,7 +139,7 @@ int main(int argc,char **argv)
 		}
 		string infile=argv[1];
 		vector <double> score_list;
-		WS_Read_Score(infile,score_list);
+		Read_Score(infile,score_list);
 		pair<double,double> param = fit_gumbel_extreme (score_list);
 		printf("miu = %lf , beta = %lf \n",param.first,param.second);
 		exit(0);

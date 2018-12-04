@@ -49,20 +49,20 @@ int WWW_Advance_Align_Dyna_Prog_Double(int n1,int n2,const vector<double> &score
 		M[i].resize(m*n);
 	}
 	//init()
-	double WS_MIN=-1000000;
+	double IN_MIN=-1000000;
 	D[_S_][0*DP_maximal+ 0] = -1;
 	D[_H_][0*DP_maximal+ 0] = -1;
 	D[_V_][0*DP_maximal+ 0] = -1;
 	M[_S_][0*DP_maximal+ 0] = 0;
-	M[_H_][0*DP_maximal+ 0] = WS_MIN;
-	M[_V_][0*DP_maximal+ 0] = WS_MIN;
+	M[_H_][0*DP_maximal+ 0] = IN_MIN;
+	M[_V_][0*DP_maximal+ 0] = IN_MIN;
 	for (i = 1; i < m; i++) 
 	{
 		D[_S_][i*DP_maximal+ 0] = _V_;
 		D[_H_][i*DP_maximal+ 0] = _V_;
 		D[_V_][i*DP_maximal+ 0] = _V_;
-		M[_S_][i*DP_maximal+ 0] = WS_MIN;
-		M[_H_][i*DP_maximal+ 0] = WS_MIN;
+		M[_S_][i*DP_maximal+ 0] = IN_MIN;
+		M[_H_][i*DP_maximal+ 0] = IN_MIN;
 		M[_V_][i*DP_maximal+ 0] = i*GAP_HEAD1; //-(Params::GAP_OPEN + (i-1)*Params::GAP_EXT);
 	}
 	for (j = 1; j < n; j++) 
@@ -70,9 +70,9 @@ int WWW_Advance_Align_Dyna_Prog_Double(int n1,int n2,const vector<double> &score
 		D[_S_][0*DP_maximal+ j] = _H_;
 		D[_H_][0*DP_maximal+ j] = _H_;
 		D[_V_][0*DP_maximal+ j] = _H_;
-		M[_S_][0*DP_maximal+ j] = WS_MIN;
+		M[_S_][0*DP_maximal+ j] = IN_MIN;
 		M[_H_][0*DP_maximal+ j] = j*GAP_HEAD2; //-(Params::GAP_OPEN + (j-1)*Params::GAP_EXT);
-		M[_V_][0*DP_maximal+ j] = WS_MIN;
+		M[_V_][0*DP_maximal+ j] = IN_MIN;
 	}
 	//fill(firstSeq, secondSeq, distFunc);
 	double gap_open;
@@ -181,7 +181,7 @@ int WWW_Advance_Align_Dyna_Prog_Double(int n1,int n2,const vector<double> &score
 	ali_sco=maximal;
 	return matches;
 }
-int WS_Seqres_DynaProg(string &seqres,string &ami_,int *mapping)
+int Seqres_DynaProg(string &seqres,string &ami_,int *mapping)
 {
 	//--[0]check
 	int len=(int)seqres.length();
@@ -277,7 +277,7 @@ char WWW_Three2One_III(const char *input)
 		default:return 'X';
 	}
 }
-void WS_Read_PDB_SEQRES(string &mapfile,string &seqres,map<string, int > &ws_mapping) //->from .pdb file
+void Read_PDB_SEQRES(string &mapfile,string &seqres,map<string, int > &ws_mapping) //->from .pdb file
 {
 	//--- list for mapping ---//
 	map<string, int>::iterator iter;
@@ -357,7 +357,7 @@ void WS_Read_PDB_SEQRES(string &mapfile,string &seqres,map<string, int > &ws_map
 		seqres=seqres+c;
 	}
 }
-void WS_Output_PDB_Full(string &pdb,map<string, int > &ws_mapping,int *ws_rec,FILE *fp)
+void Output_PDB_Full(string &pdb,map<string, int > &ws_mapping,int *ws_rec,FILE *fp)
 {
 	//read
 	ifstream fin;
@@ -436,7 +436,7 @@ void WS_Output_PDB_Full(string &pdb,map<string, int > &ws_mapping,int *ws_rec,FI
 
 
 //=============== PDB_File_Cut =============//
-void WS_Read_FASTA_SEQRES(string &mapfile,string &seqres,int skip) //->from .fasta file
+void Read_FASTA_SEQRES(string &mapfile,string &seqres,int skip) //->from .fasta file
 {
 	ifstream fin;
 	string buf,temp;
@@ -470,11 +470,11 @@ void PDB_File_Cut(string &pdbfile,string &seqfile,string &outfile,int skip)
 {
 	//-> read fasta sequence
 	string fasta_seqres;
-	WS_Read_FASTA_SEQRES(seqfile,fasta_seqres,skip);
+	Read_FASTA_SEQRES(seqfile,fasta_seqres,skip);
 	//-> read pdb sequence
 	string pdb_seqres;
 	map<string, int > ws_mapping;
-	WS_Read_PDB_SEQRES(pdbfile,pdb_seqres,ws_mapping);
+	Read_PDB_SEQRES(pdbfile,pdb_seqres,ws_mapping);
 	//-> do dynamic programming
 	int pdb_length=(int)pdb_seqres.length();
 	int seq_length=(int)fasta_seqres.length();
@@ -484,7 +484,7 @@ void PDB_File_Cut(string &pdbfile,string &seqfile,string &outfile,int skip)
 //		exit(-1);
 	}
 	int mapping[6000];
-	int retv=WS_Seqres_DynaProg(pdb_seqres,fasta_seqres,mapping);
+	int retv=Seqres_DynaProg(pdb_seqres,fasta_seqres,mapping);
 	if(retv!=1)
 	{
 		fprintf(stderr,"mapping bad! %s \n",pdbfile.c_str());
@@ -492,7 +492,7 @@ void PDB_File_Cut(string &pdbfile,string &seqfile,string &outfile,int skip)
 	}
 	//-> output cut file
 	FILE *fp=fopen(outfile.c_str(),"wb");
-	WS_Output_PDB_Full(pdbfile,ws_mapping,mapping,fp);
+	Output_PDB_Full(pdbfile,ws_mapping,mapping,fp);
 	fclose(fp);
 }
 
