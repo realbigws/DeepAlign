@@ -50,6 +50,7 @@ function usage()
 	echo ""
 	echo "-k topK              : Keep the results for top topK proteins [default = 100]"
 	echo "                       set 0 to skip the re-align step and NO alignment; set -1 to scan ALL the input_list without filter."
+	echo "                       set -2 to scan ALL the refined alignment after filter."
 	echo ""
 	echo "-s score_func        : 1:distance-score,2:vector-score,4:evolution-score; these scores could be combined [default 7]"
 	echo ""
@@ -474,7 +475,7 @@ fi
 
 #================== Part 1.2 run main search for data_list ==================# 
 
-if [ $rel_topk -ge 0 ]
+if [ $rel_topk -ge 0 ] || [ $rel_topk -eq -2 ]
 then
 	#--------- echo -----------------#
 	echo "step1: run main search for $data_list"
