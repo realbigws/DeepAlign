@@ -3523,7 +3523,7 @@ int main(int argc,char **argv)
 				//break check
 				if(CLE_Filter>=3)  //only filter
 				{
-					exit(-1);
+					exit(0);   //normal exit
 				}
 			}
 			else
