@@ -39,9 +39,9 @@ function usage()
 	echo ""
 	echo "-d data_db           : The folder containing the database files (i.e., .pdb files) [default = databases/pdb_BC100/]"
 	echo ""
-	echo "-L refer_list        : The list of reference database [default = databases/reference_pdb_list]"
+	echo "-L refer_list        : The list of reference database [default = databases/reference_list]"
 	echo ""
-	echo "-D refer_db          : The folder containing the reference files (in .pdb format) [default = databases/CAL_PDB/]"
+	echo "-D refer_db          : The folder containing the reference files (in .pdb format) [default = databases/reference_pdb/]"
 	echo ""
 	echo "***** optional arguments *****"
 	echo "-t tmsco             : Apply TMscore cutoff during searching process [default = 0.35]"
@@ -293,11 +293,11 @@ relnam=${fulnam%.*}
 #----------- check data  -----------#
 if [ "$refer_list" == "" ]
 then
-	refer_list="${LOCAL_HOME}/databases/reference_pdb_list"
+	refer_list="${LOCAL_HOME}/databases/reference_list"
 fi
 if [ "$refer_db" == "" ]
 then
-	refer_db="${LOCAL_HOME}/databases/CAL_PDB/"
+	refer_db="${LOCAL_HOME}/databases/reference_pdb/"
 fi
 if [ "$data_list" == "" ]
 then
