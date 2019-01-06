@@ -406,9 +406,9 @@ then
 		# screen output for 'proc=0'
 		if [ $i -eq 0 ]   #-> for proc=0, we add option "-v"
 		then
-		  addi=" -v "
+			addi=" -v "
 		else
-		  addi=""
+			addi=""
 		fi
 		# check list
 		if [ ! -s ${prot}/${refer_relnam}.$i ]
@@ -430,7 +430,10 @@ then
 	for ((i=0;i<$CPU_num;i++))
 	do
 		rm -f ${prot}/${relnam}_${refer_relnam}_tmpout.$i
-		cat ${prot}/${relnam}_${refer_relnam}_zscore.$i >> ${prot}/${relnam}_${refer_relnam}.Score_zsco
+		if [ -s ${prot}/${relnam}_${refer_relnam}_zscore.$i ]
+		then
+			cat ${prot}/${relnam}_${refer_relnam}_zscore.$i >> ${prot}/${relnam}_${refer_relnam}.Score_zsco
+		fi
 		rm -f ${prot}/${relnam}_${refer_relnam}_zscore.$i
 	done
 	#--| calculate mean/vari
@@ -448,9 +451,14 @@ then
 		# screen output for 'proc=0'
 		if [ $i -eq 0 ]   #-> for proc=0, we add option "-v"
 		then
-		  addi=" -v "
+			addi=" -v "
 		else
-		  addi=""
+			addi=""
+		fi
+		# check list
+		if [ ! -s ${prot}/${refer_relnam}.$i ]
+		then
+			continue
 		fi
 		# run program
 		(${LOCAL_HOME}/${deepalign} ${addi} -f ${prot}/${refer_relnam}.$i -r $refer_db -q $query_pdb -j 0 -m 0 -p 0 -w ${prot}/${relnam}_${refer_relnam}_evalue.$i -s $score_func)&
@@ -467,7 +475,10 @@ then
 	for ((i=0;i<$CPU_num;i++))
 	do
 		rm -f ${prot}/${refer_relnam}.$i
-		cat ${prot}/${relnam}_${refer_relnam}_evalue.$i >> ${prot}/${relnam}_${refer_relnam}.Score_evd
+		if [ -s ${prot}/${relnam}_${refer_relnam}_evalue.$i ]
+		then
+			cat ${prot}/${relnam}_${refer_relnam}_evalue.$i >> ${prot}/${relnam}_${refer_relnam}.Score_evd
+		fi
 		rm -f ${prot}/${relnam}_${refer_relnam}_evalue.$i
 	done
 	#--| calculate miu/beta
@@ -504,9 +515,14 @@ then
 		# screen output for 'proc=0'
 		if [ $i -eq 0 ]   #-> for proc=0, we add option "-v"
 		then
-		  addi=" -v "
+			addi=" -v "
 		else
-		  addi=""
+			addi=""
+		fi
+		# check list
+		if [ ! -s ${prot}/${data_relnam}.$i ]
+		then
+			continue
 		fi
 		# run program
 		(${LOCAL_HOME}/${deepalign} ${addi} -f ${prot}/${data_relnam}.$i -r $data_db -q $query_pdb -m 2 -g $MEAN -h $VARI -c $tmsco -p 0 -w ${prot}/${relnam}_${data_relnam}.$i -s $score_func)&
@@ -524,7 +540,10 @@ then
 	for ((i=0;i<$CPU_num;i++))
 	do
 		rm -f ${prot}/${data_relnam}.$i
-		cat ${prot}/${relnam}_${data_relnam}.$i >> ${prot}/${relnam}_${data_relnam}.Score
+		if [ -s ${prot}/${relnam}_${data_relnam}.$i ]
+		then
+			cat ${prot}/${relnam}_${data_relnam}.$i >> ${prot}/${relnam}_${data_relnam}.Score
+		fi
 		rm -f ${prot}/${relnam}_${data_relnam}.$i
 	done
 	sort -g -r -k ${sort_col} ${prot}/${relnam}_${data_relnam}.Score > ${output_root}/${relnam}_${data_relnam}.SortedScore
@@ -592,9 +611,14 @@ then
 		# screen output for 'proc=0'
 		if [ $i -eq 0 ]   #-> for proc=0, we add option "-v"
 		then
-		  addi=" -v "
+			addi=" -v "
 		else
-		  addi=""
+			addi=""
+		fi
+		# check list
+		if [ ! -s ${prot}/${relnam}_${data_relnam}_topKlist.$i ]
+		then
+			continue
 		fi
 		# run program
 		(${LOCAL_HOME}/${deepalign} ${addi} -f ${prot}/${relnam}_${data_relnam}_topKlist.$i -r $data_db -q $query_pdb -m 0 -p 1 -d $topk_align -w ${prot}/${relnam}_${data_relnam}_topKsco.$i -s $score_func)&
@@ -622,9 +646,14 @@ then
 			## screen output for 'proc=0'
 			if [ $i -eq 0 ]   #-> for proc=0, we add option "-v"
 			then
-			  addi=" -v "
+				addi=" -v "
 			else
-			  addi=""
+				addi=""
+			fi
+			# check list
+			if [ ! -s ${prot}/${relnam}_${data_relnam}_topKlist.$i ]
+			then
+				continue
 			fi
 			## run program
 			(${LOCAL_HOME}/${deepalign} ${addi} -f ${prot}/${relnam}_${data_relnam}_topKlist.$i -r $prot -q $query_pdb -m 0 -p 1 -i 0 -d $topk_align -w ${prot}/${relnam}_${data_relnam}_topKsco.$i -s $score_func)&
@@ -649,7 +678,10 @@ then
 	for ((i=0;i<$CPU_num;i++))
 	do
 		rm -f ${prot}/${relnam}_${data_relnam}_topKlist.$i
-		cat ${prot}/${relnam}_${data_relnam}_topKsco.$i >> ${prot}/${relnam}_${data_relnam}.TopKScore
+		if [ -s ${prot}/${relnam}_${data_relnam}_topKsco.$i ]
+		then
+			cat ${prot}/${relnam}_${data_relnam}_topKsco.$i >> ${prot}/${relnam}_${data_relnam}.TopKScore
+		fi
 		rm -f ${prot}/${relnam}_${data_relnam}_topKsco.$i
 	done
 	sort -g -r -k ${sort_col} ${prot}/${relnam}_${data_relnam}.TopKScore > ${output_root}/${relnam}_${data_relnam}.SortedTopKScore
