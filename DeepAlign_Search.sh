@@ -410,6 +410,11 @@ then
 		else
 		  addi=""
 		fi
+		# check list
+		if [ ! -s ${prot}/${refer_relnam}.$i ]
+		then
+			continue
+		fi
 		# run program
 		(${LOCAL_HOME}/${deepalign} ${addi} -f ${prot}/${refer_relnam}.$i -r $refer_db -q $query_pdb -m 3 -g 0 -h 1 -c 0 -p 0 -b ${prot}/${relnam}_${refer_relnam}_zscore.$i -w ${prot}/${relnam}_${refer_relnam}_tmpout.$i)&
 		OUT=$?
