@@ -63,7 +63,7 @@ Install:
 
 1. download the package
 
-git clone --recursive https://github.com/realbigws/DeepAlign/
+git clone https://github.com/realbigws/DeepAlign/
 cd DeepAlign/
 
 --------------
@@ -79,7 +79,6 @@ cd ../
 3. update the package
 
 git pull
-git submodule foreach --recursive git pull origin master
 
 
 
