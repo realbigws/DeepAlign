@@ -178,7 +178,8 @@ Note: the first two examples are located in examples/ directory
 	./DeepAlign_Search.sh -c 8 -q examples/1pazA.pdb -l databases/reference_list -d databases/reference_pdb/ -O 1pazA.rank -H `pwd`
 
 4. Run batch pariwise comparison
-	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/reference_pdb -I examples/ref_top10_list -R databases/reference_pdb -p DeepAlign -H `pwd`
+	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/reference_pdb -I examples/ref_top10_list -R databases/reference_pdb -p DeepAlign \
+		-f '.pdb' -H `pwd`
 
 
 

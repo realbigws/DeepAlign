@@ -23,7 +23,7 @@ usage()
 	echo "          'TMSorGDT' (default = 0) for output TMscore[1], or uGDT[2], or both[0]. "
 	echo "          'NAMorNOT' (default = 0) for output header[1], or not[0]. "
 	echo "          'options' (default = null) is the arguments for <program>, such as '-n -1' "
-	echo "          'suffix'  (default = '.pdb') is for the suffix name to align. "
+	echo "          'suffix'  (default = null) is for the suffix name to align, such as '.pdb' "
 	echo "[note3]:  default home directory of DeepAlign_package. "
 	echo "          [default = $RXTHREAD_HOME/DeepAlign_package]"
 	echo "[note4]:  remove_tmp is set to 1 by default to remove temporary folder. "
@@ -44,7 +44,7 @@ jobid="struct"
 TMSorGDT=0         #-> '0' for output both TMscore and uGDT; '1' for output TMscore; '2' for output uGDT
 NAMorNOT=0         #-> '1' for output header; '0' for not output. 
 options=""         #-> the arguments for <program>, such as '-n -1'
-suffix=".pdb"      #-> suffix name (default is '.pdb') 
+suffix=""          #-> suffix name (such as '.pdb') 
 #-> required arguments
 list1=""
 root1=""
