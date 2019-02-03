@@ -107,9 +107,9 @@ with the following CPU type,
 Setup for structure homolog search:
 ===================================
 
-In this package please find an example PDB database in databases/CAL_PDB_1814
-reference_pdb_list contains all the proteins in this folder. 
-Please do not delete or change CAL_PDB_1814 and reference_pdb_list.
+In this package please find an example PDB database in 'databases/reference_pdb'
+'reference_list' contains all the proteins in this folder. 
+Please do not delete or change 'reference_pdb' and 'reference_list'.
 
 Users can download some protein structure databases from http://raptorx.uchicago.edu/download/
 
@@ -131,7 +131,7 @@ You can also build your own database for structure homology search.
 ------
 
 3. reference PDB database
-Note: The reference PDB database locates at databases/CAL_PDB_1814
+Note: The reference PDB database locates at databases/reference_pdb
 
 
 
@@ -164,19 +164,21 @@ Usage information for all the programs are available by simply running these pro
 Examples:
 =========
 
-Note: the first three examples are located in examples/ directory
+Note: the first two examples are located in examples/ directory
 
 1. Run pairwise structure alignment for 1col.pdb and 1cpc.pdb
-	./DeepAlign 1col.pdb 1cpc.pdb
+	cd examples/DeepAlign_example
+		./DeepAlign 1col.pdb 1cpc.pdb
 
 2. Run multiple structure alignment for proteins in input_list
-	./3DCOMB -i input_list
+	cd examples/3DCOMB_example
+		./3DCOMB -i input_list
 
 3. Run database search for 1pazA.pdb against bc40 template database
-	./DeepAlign_Search.sh -c 8 -q examples/1pazA.pdb -l databases/reference_pdb_list -d databases/CAL_PDB_1814/ -O 1pazA.rank -H `pwd`
+	./DeepAlign_Search.sh -c 8 -q examples/1pazA.pdb -l databases/reference_list -d databases/reference_pdb/ -O 1pazA.rank -H `pwd`
 
 4. Run batch pariwise comparison
-	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/CAL_PDB_1814 -I examples/ref_top10_list -R databases/CAL_PDB_1814 \
+	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/reference_pdb -I examples/ref_top10_list -R databases/reference_pdb \
 		-p DeepAlign -f ".pdb" -H `pwd`
 
 
