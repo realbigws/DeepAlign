@@ -16,7 +16,7 @@ DeepAlignEXE = /DeepAlign
 3DCOMBEXE = /3DCOMB
 
 
-all: DeepScore DeepAlign 3DCOMB util
+all: DeepScore DeepAlign 3DCOMB PDB_Rotmol util
 
 
 DeepScore:
@@ -30,6 +30,10 @@ DeepAlign:
 3DCOMB:
 	cd $(3DCOMBDIR)&&make
 	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
+
+PDB_Rotmol:
+	$(CXX) PDB_Rotmol_src/*.cpp -o PDB_Rotmol
+	mv PDB_Rotmol ../util
 
 util:
 	$(CXX) $(UTILS)Stat_List.cpp $(FLAG) -o Stat_List
