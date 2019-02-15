@@ -1,0 +1,6 @@
+#name1 name2 len1 len2 -> BLOSUM CLESUM DeepScore -> LALI RMSDval TMscore -> MAXSUB GDT_TS GDT_HA -> SeqID nLen dCutoff uGDT
+ 1col 1cpc  197  162 ->    -20    197    206.55 ->  110   3.364   0.489 ->  0.354  0.412  0.267 ->    17   162  0.000 66.750
+#---------------- transformation to superpose 1st structure onto the 2nd ------------------------
+ -0.141975  0.298653 -0.943742    19.605016
+  0.249286  0.933459  0.257897   -99.815699
+  0.957966 -0.198647 -0.206978    -8.474005

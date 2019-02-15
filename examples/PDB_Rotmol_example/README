@@ -1,0 +1,17 @@
+#---------------
+running example:
+#---------------
+
+1) generate rotmat by DeepScore (or, DeepAlign)
+
+./DeepScore 1col.pdb 1cpc.pdb -a 1col_1cpc.fasta -o output
+
+
+2) rotate the input PDB by the given rotmat
+
+./PDB_Rotmol 1col.pdb output.score rotout 3
+
+[note]:
+the output file 'rotout' shall be the same as the 1st molecule in 'output.pdb'
+
+
