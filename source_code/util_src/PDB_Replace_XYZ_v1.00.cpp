@@ -154,6 +154,7 @@ void Replace_Coordinate(string &pdbfile, FILE *fp, int start_,
 	int start=start_+1;
 	int end=start_+xyz_rec.size();
 	int count=0;
+	char command[300000];
 	for(;;)
 	{
 		if(!getline(fin,buf,'\n'))break;
@@ -178,7 +179,11 @@ void Replace_Coordinate(string &pdbfile, FILE *fp, int start_,
 						string tail=buf.substr(54,len-54);
 						//replace coordinate
 						for(int i=0;i<(int)xyz_rec[count-1].size();i++)
-							fprintf(fp,"%s%s%s\n",head_rec[count-1][i].c_str(),xyz_rec[count-1][i].c_str(),tail.c_str());
+						{
+							sprintf(command,"%s%s%s",head_rec[count-1][i].c_str(),xyz_rec[count-1][i].c_str(),tail.c_str());
+							command[77]=command[13];
+							fprintf(fp,"%s\n",command);
+						}
 					}
 				}
 			}
