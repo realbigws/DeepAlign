@@ -32,7 +32,7 @@ DeepAlign:
 	mv $(3DCOMBDIR)$(3DCOMBEXE) ../
 
 PDB_Rotmol:
-	$(CXX) PDB_Rotmol_src/*.cpp -o PDB_Rotmol
+	$(CXX) PDB_Rotmol_src/*.cpp $(FLAG) -o PDB_Rotmol
 	mv PDB_Rotmol ../util
 
 util:
@@ -43,8 +43,9 @@ util:
 	$(CXX) $(UTILS)TopK_by_EVD.cpp $(FLAG) -o TopK_by_EVD
 	$(CXX) $(UTILS)List_Div_Shuf.cpp $(FLAG) -o List_Div_Shuf
 	$(CXX) $(UTILS)DeepSearch_Rank.cpp $(FLAG) -o DeepSearch_Rank
+	$(CXX) $(UTILS)PDB_Replace_XYZ.cpp $(FLAG) -o PDB_Replace_XYZ
 	mkdir -p ../util
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank ../util/
+	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank PDB_Replace_XYZ ../util/
 
 # clean all the temp files
 clean:
