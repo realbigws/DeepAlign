@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 		else chain_char=chain[0];
 		//--- process chain ---//
 		FILE *fp=fopen(outfile.c_str(),"wb");
-		PDB_Add_Chain(infile,fp,chain[0]);
+		PDB_Add_Chain(infile,fp,chain_char);
 		fclose(fp);
 		exit(0);
 	}
