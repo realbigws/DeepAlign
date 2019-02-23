@@ -41,7 +41,7 @@ void PDB_Residue_Trans(string &pdbfile,FILE *fp,int start) //->from .pdb file
 		if(len>=4)
 		{
 			temp=buf.substr(0,4);
-			if(temp=="ATOM"||temp=="HETA")
+			if(temp=="ATOM"||temp=="HETA"||temp=="MISS")
 			{
 				temp=buf.substr(22,4);
 				if(temp!=orirec)

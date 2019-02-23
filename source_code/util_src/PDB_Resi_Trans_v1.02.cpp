@@ -21,7 +21,7 @@ string convertInt(int number)
 
 
 //========== process PDB ============//
-void PDB_Atom_Trans(string &pdbfile,FILE *fp,int start) //->from .pdb file
+void PDB_Residue_Trans(string &pdbfile,FILE *fp,int start) //->from .pdb file
 {
 	ifstream fin;
 	string buf,temp;
@@ -34,7 +34,6 @@ void PDB_Atom_Trans(string &pdbfile,FILE *fp,int start) //->from .pdb file
 	}
 	int pos;
 	int len;
-	int count=start;
 	for(;;)
 	{
 		if(!getline(fin,buf,'\n'))break;
@@ -42,13 +41,14 @@ void PDB_Atom_Trans(string &pdbfile,FILE *fp,int start) //->from .pdb file
 		if(len>=4)
 		{
 			temp=buf.substr(0,4);
-			if(temp=="ATOM"||temp=="HETA")
+			if(temp=="ATOM"||temp=="HETA"||temp=="MISS")
 			{
-				string pos_str=convertInt(count);
-				count++;
-				string part1=buf.substr(0,5);
-				string part2=buf.substr(11,len-11);
-				fprintf(fp,"%s%6s%s\n",part1.c_str(),pos_str.c_str(),part2.c_str());
+				temp=buf.substr(22,4);
+				pos=atoi(temp.c_str())+start;
+				string pos_str=convertInt(pos);
+				string part1=buf.substr(0,22);
+				string part2=buf.substr(26,len-26);
+				fprintf(fp,"%s%4s%s\n",part1.c_str(),pos_str.c_str(),part2.c_str());
 			}
 			else fprintf(fp,"%s\n",buf.c_str());
 		}
@@ -63,17 +63,17 @@ int main(int argc,char **argv)
 	{
 		if(argc<4)
 		{
-			fprintf(stderr,"Version 1.01 \n");
-			fprintf(stderr,"PDB_Atom_Start <pdbfile> <start_pos> <outfile> \n");
+			fprintf(stderr,"Version 1.02 \n");
+			fprintf(stderr,"PDB_Resi_Trans <pdbfile> <start_pos> <outfile> \n");
 			fprintf(stderr,"[note]: input PDB_file and start position, \n");
-			fprintf(stderr,"        begin the atom numbering of PDB_file according to the start position. \n");
+			fprintf(stderr,"        translocate the residue numbering of PDB_file by start_pos offset. \n");
 			exit(-1);
 		}
 		string infile=argv[1];
 		int start_pos=atoi(argv[2]);
 		string outfile=argv[3];
 		FILE *fp=fopen(outfile.c_str(),"wb");
-		PDB_Atom_Trans(infile,fp,start_pos);
+		PDB_Residue_Trans(infile,fp,start_pos);
 		fclose(fp);
 		exit(0);
 	}

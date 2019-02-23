@@ -226,8 +226,6 @@ int Seqres_DynaProg(string &seqres,string &ami_,int *mapping)
 		{
 			if(second>0)
 			{
-//				fprintf(stderr,"Alignment BAD!!!\n");
-//				return -1;
 				retv=-1;
 				continue;
 			}
@@ -309,12 +307,10 @@ void Read_PDB_SEQRES(string &mapfile,string &seqres,map<string, int > &ws_mappin
 		//check ATOM
 		if(len<4)continue;
 		temp=buf.substr(0,4);
-		if(temp!="ATOM" && temp!="HETA")continue;
+		if(temp!="ATOM" && temp!="HETA" && temp!="MISS")continue;
 		//check CA
 		temp=buf.substr(13,2);
-		if(temp!="CA")continue;
-		//check DNA
-//		if(buf[17]==' ' || buf[18]==' ' || buf[19]==' ')continue;
+		if(temp!="CA" && temp!="  ")continue;
 		//chain
 		cur_chain=buf[21];
 		if(chain!='_')
@@ -387,12 +383,7 @@ void Output_PDB_Full(string &pdb,map<string, int > &ws_mapping,int *ws_rec,FILE 
 		//check ATOM
 		if(len<4)continue;
 		temp=buf.substr(0,4);
-		if(temp!="ATOM" && temp!="HETA")continue;
-		//check CA
-//		temp=buf.substr(13,2);
-//		if(temp!="CA")continue;
-		//check DNA
-//		if(buf[17]==' ' || buf[18]==' ' || buf[19]==' ')continue;
+		if(temp!="ATOM" && temp!="HETA" && temp!="MISS")continue;
 		//chain
 		cur_chain=buf[21];
 		if(chain!='_')
@@ -481,14 +472,12 @@ void PDB_File_Cut(string &pdbfile,string &seqfile,string &outfile,int skip)
 	if(seq_length>pdb_length)
 	{
 		fprintf(stderr,"over range bad! %s \n",pdbfile.c_str());
-//		exit(-1);
 	}
 	int mapping[6000];
 	int retv=Seqres_DynaProg(pdb_seqres,fasta_seqres,mapping);
 	if(retv!=1)
 	{
 		fprintf(stderr,"mapping bad! %s \n",pdbfile.c_str());
-//		exit(-1);
 	}
 	//-> output cut file
 	FILE *fp=fopen(outfile.c_str(),"wb");

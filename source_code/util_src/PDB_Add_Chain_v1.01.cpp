@@ -41,7 +41,7 @@ void PDB_Add_Chain(string &pdbfile,FILE *fp,char chain) //->from .pdb file
 		if(len>=4)
 		{
 			temp=buf.substr(0,4);
-			if(temp=="ATOM"||temp=="HETA")
+			if(temp=="ATOM"||temp=="HETA"||temp=="MISS")
 			{
 				buf[21]=chain;
 				fprintf(fp,"%s\n",buf.c_str());

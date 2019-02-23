@@ -40,15 +40,18 @@ util:
 	$(CXX) $(UTILS)Fitting_EVD.cpp $(FLAG) -o Fitting_EVD
 	$(CXX) $(UTILS)Domain_Proc.cpp $(FLAG) -o Domain_Proc
 	$(CXX) $(UTILS)PDB_File_Cut.cpp $(FLAG) -o PDB_File_Cut
+	$(CXX) $(UTILS)PDB_To_SEQ.cpp $(FLAG) -o PDB_To_SEQ
 	$(CXX) $(UTILS)TopK_by_EVD.cpp $(FLAG) -o TopK_by_EVD
 	$(CXX) $(UTILS)List_Div_Shuf.cpp $(FLAG) -o List_Div_Shuf
 	$(CXX) $(UTILS)DeepSearch_Rank.cpp $(FLAG) -o DeepSearch_Rank
 	$(CXX) $(UTILS)PDB_Replace_XYZ.cpp $(FLAG) -o PDB_Replace_XYZ
 	$(CXX) $(UTILS)PDB_Atom_Start.cpp $(FLAG) -o PDB_Atom_Start
 	$(CXX) $(UTILS)PDB_Resi_Start.cpp $(FLAG) -o PDB_Resi_Start
+	$(CXX) $(UTILS)PDB_Resi_Trans.cpp $(FLAG) -o PDB_Resi_Trans
 	$(CXX) $(UTILS)PDB_Add_Chain.cpp $(FLAG) -o PDB_Add_Chain
 	mkdir -p ../util
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank PDB_Replace_XYZ PDB_Atom_Start PDB_Resi_Start PDB_Add_Chain ../util/
+	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut PDB_To_SEQ TopK_by_EVD List_Div_Shuf DeepSearch_Rank ../util
+	mv PDB_Replace_XYZ PDB_Atom_Start PDB_Resi_Start PDB_Resi_Trans PDB_Add_Chain ../util/
 
 # clean all the temp files
 clean:
