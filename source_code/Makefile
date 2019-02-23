@@ -45,8 +45,10 @@ util:
 	$(CXX) $(UTILS)DeepSearch_Rank.cpp $(FLAG) -o DeepSearch_Rank
 	$(CXX) $(UTILS)PDB_Replace_XYZ.cpp $(FLAG) -o PDB_Replace_XYZ
 	$(CXX) $(UTILS)PDB_Atom_Start.cpp $(FLAG) -o PDB_Atom_Start
+	$(CXX) $(UTILS)PDB_Resi_Start.cpp $(FLAG) -o PDB_Resi_Start
+	$(CXX) $(UTILS)PDB_Add_Chain.cpp $(FLAG) -o PDB_Add_Chain
 	mkdir -p ../util
-	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank PDB_Replace_XYZ PDB_Atom_Start ../util/
+	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut TopK_by_EVD List_Div_Shuf DeepSearch_Rank PDB_Replace_XYZ PDB_Atom_Start PDB_Resi_Start PDB_Add_Chain ../util/
 
 # clean all the temp files
 clean:
