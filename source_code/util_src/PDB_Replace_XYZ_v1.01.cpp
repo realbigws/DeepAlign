@@ -175,12 +175,13 @@ void Replace_Coordinate(string &pdbfile, FILE *fp, int start_,
 						count++;
 						mapping.insert(map < int, int >::value_type(pos, count));
 						//get head and tail
-						string head=buf.substr(0,30);
+						string resi_part=buf.substr(21,9);
 						string tail=buf.substr(54,len-54);
 						//replace coordinate
 						for(int i=0;i<(int)xyz_rec[count-1].size();i++)
 						{
-							sprintf(command,"%s%s%s",head_rec[count-1][i].c_str(),xyz_rec[count-1][i].c_str(),tail.c_str());
+							string atom_part=head_rec[count-1][i].substr(0,21);
+							sprintf(command,"%s%s%s%s",atom_part.c_str(),resi_part.c_str(),xyz_rec[count-1][i].c_str(),tail.c_str());
 							command[77]=command[13];
 							fprintf(fp,"%s\n",command);
 						}
