@@ -506,7 +506,9 @@ then
 		exit 1
 	fi
 	#--| run DeepAlign for these N-cut refer_list
-	deepalign="DeepAlign $options -P 0 -u 0 -e $MAXSIZE "
+	deepalign="DeepAlign -u 0 -P 0 -e $MAXSIZE $options "
+
+	echo $deepalign
 
 	#--------- main search ----------#
 	#--| calculate main search
@@ -602,7 +604,7 @@ then
 		exit 1
 	fi
 	#--| run DeepAlign for these N-cut refer_list
-	deepalign="DeepAlign $options -P 0 -u 0 -e $MAXSIZE "
+	deepalign="DeepAlign -u 0 -P 0 -e $MAXSIZE $options "
 
 	#--------- main search ----------#
 	#--| calculate main search
