@@ -508,8 +508,6 @@ then
 	#--| run DeepAlign for these N-cut refer_list
 	deepalign="DeepAlign -u 0 -P 0 -e $MAXSIZE $options "
 
-	echo $deepalign
-
 	#--------- main search ----------#
 	#--| calculate main search
 	for ((i=0;i<$CPU_num;i++))
