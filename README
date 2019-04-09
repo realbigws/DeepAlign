@@ -153,7 +153,7 @@ To run multiple alignment, type the following command,
 
 4. Database search
 To run database search, type the following command,
-	./DeepAlign_Search.sh -c NP -q query_file -l pdb_list -d path_to_folder_containing_PDB_files -H `pwd`
+	./DeepAlign_Search.sh -c NP -q query_file -l pdb_list -d path_to_folder_containing_PDB_files
 
 Usage information for all the programs are available by simply running these programs without any arguments.
 
@@ -175,11 +175,10 @@ Note: the first two examples are located in examples/ directory
 		./3DCOMB -i input_list
 
 3. Run database search for 1pazA.pdb against bc40 template database
-	./DeepAlign_Search.sh -c 8 -q examples/1pazA.pdb -l databases/reference_list -d databases/reference_pdb/ -O 1pazA.rank -H `pwd`
+	./DeepAlign_Search.sh -c 8 -q examples/1pazA.pdb -l databases/reference_list -d databases/reference_pdb/ -O 1pazA.rank
 
 4. Run batch pariwise comparison
-	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/reference_pdb -I examples/ref_top10_list -R databases/reference_pdb -p DeepAlign \
-		-f '.pdb' -H `pwd`
+	util/batch_strucsco_mat.sh -i examples/ref_top10_list -r databases/reference_pdb -I examples/ref_top10_list -R databases/reference_pdb -p DeepAlign -f '.pdb'
 
 
 
