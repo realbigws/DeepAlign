@@ -1,16 +1,7 @@
 #!/bin/bash
 
 # ============== global variables defined here ========= # start
-declare RXTHREAD_HOME           #-> root directory
-if [ -z "${RXTHREAD_HOME}" ]
-then
-	#echo "RXTHREAD_HOME not set. Use default value '~/GitBucket'"
-	RXTHREAD_HOME=~/GitBucket
-fi
-
-# ============== global variables defined here ========= # start
 declare MAXSIZE=5000            #-> maximal subjext length   (default: 5000)
-declare FUNC_RET                #-> for the function echo value
 # ============== global variables defined here ========= # end
 
 
@@ -73,80 +64,18 @@ function usage()
 	echo "-S options           : the arguments for DeepAlign, such as '-n -1' [default = null]"
 	echo ""
 	echo "-H home              : home directory of DeepSearch (i.e., \$DeepSearchHome)."
-	echo "                       [default = $RXTHREAD_HOME/DeepAlign_Package]"
+	echo "                       [default = `dirname $0`]"
 	echo ""
 	exit 1
 }
-
-
-
-#----- check file existence ------# -> this is a function
-function file_exist()
-{
-	#-- input --#
-	local file=${1}    #-> 1st input is the file content
-	local name=${2}    #-> 2nd input is the file name
-	#-- check --#
-	if [ -z "$file" ]
-	then
-		echo "$name is null !!" >&2
-		return 1
-	fi
-	if [ ! -s "$curdir/$file" ]
-	then
-		if [ ! -s "$file" ]
-		then
-			echo "$name $file not found !!" >&2
-			return 1
-		fi
-	else
-		file=$curdir/$file
-	fi
-	#-- return --#
-	FUNC_RET=$file
-	return 0
-}
-
-
-#----- check root existence ------# -> this is a function
-function root_exist()
-{
-	FUNC_RET=""
-	#-- input --#
-	local root=${1}    #-> 1st input is the root content
-	local name=${2}    #-> 2nd input is the root name
-	#-- check --#
-	if [ -z "$root" ]
-	then
-		echo "$name is null !!" >&2
-		return 1
-	fi
-	if [ ! -d "$curdir/$root" ]
-	then
-		if [ ! -d "$root" ]
-		then
-			echo "$name $root not found !!" >&2
-			return 1
-		fi
-	else
-		root=$curdir/$root
-	fi
-	#-- return --#
-	FUNC_RET=$root
-	return 0
-}
-
-
 
 
 #-------------------------------------------------------------#
 ##### ===== get pwd and check DeepThreaderHome ====== #########
 #-------------------------------------------------------------#
 
-
 #------ current directory ------#
 curdir="$(pwd)"
-
 
 #-------- check usage -------#
 if [ $# -lt 1 ];
@@ -186,7 +115,7 @@ sort_col=8                      #-> sort by DeepScore
 #      1    2    3    4 (5)     6      7         8 (9)  10      11      12 (13)   14     15     16 (17)  18   19   20   21
 options=""
 #--| home directory
-home=$RXTHREAD_HOME/DeepAlign_Package         #-> home directory
+home=`dirname $0`               #-> home directory
 
 
 #-> parse arguments
@@ -269,24 +198,22 @@ done
 
 #========================== Part 0.1 check the relevant roots of input arguments =======================#
 
-#----------- check home -----------------#
-root_exist $home home
-retval=$?
-if [ "$retval" != "0"  ]
+# ------ check home directory ---------- #
+if [ ! -d "$home" ]
 then
+	echo "home directory $home not exist " >&2
 	exit 1
-else
-	home=$FUNC_RET
 fi
+home=`readlink -f $home`
 LOCAL_HOME=${home}
-#echo "LOCAL_HOME=$LOCAL_HOME"
 
-#----------- check query  -----------#
-if [ -z "$query_pdb" ]
+# ------ check input pdb ------#
+if [ ! -s "$query_pdb" ]
 then
-	echo "input query_pdb is null !!" >&2
+	echo "input query_pdb $query_pdb not found !!" >&2
 	exit 1
 fi
+query_pdb=`readlink -f $query_pdb`
 fulnam=`basename $query_pdb`
 relnam=${fulnam%.*}
 
@@ -321,35 +248,13 @@ rel_topk=$topK
 
 #========================== Part 0.2 check the relevant roots of output arguments ========================#
 
-#----------- create output_root with absolute directory --------#
+# ------ check output directory ------#
 if [ "$output_root" == "" ]
 then
-	output_root=$curdir/${relnam}_DeepSearch
-fi
-dir_out_root=`dirname $output_root`
-nam_out_root=`basename $output_root`
-if [ "$dir_out_root" == "." ]
-then
-	if [ "$nam_out_root" == "." ]
-	then
-		output_root=$curdir
-	else
-		output_root=$curdir/$nam_out_root
-	fi
+	output_root=${relnam}_DeepSearch
 fi
 mkdir -p $output_root
-#-> change to absolute
-if [ ! -d "$curdir/$output_root" ]
-then
-	if [ ! -d "$output_root" ]
-	then
-		echo "outroot $output_root not found !!" >&2
-		exit 1
-	fi
-else
-	output_root=$curdir/$output_root
-fi
-
+output_root=`readlink -f $output_root`
 
 #----------- assign output_file with absolute directory --------#
 if [ "$output_file" != "" ]
