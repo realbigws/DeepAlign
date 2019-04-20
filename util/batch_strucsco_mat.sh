@@ -16,7 +16,7 @@ usage()
 	echo "          'options' (default = null) is the arguments for <program>, such as '-n -1' "
 	echo "          'suffix'  (default = null) is for the suffix name to align, such as '.pdb' "
 	echo "[note3]:  default home directory of DeepAlign_package. "
-	echo "          [default = `dirname $0`]"
+	echo "          [default = `dirname $0`/../]"
 	echo "[note4]:  remove_tmp is set to 1 by default to remove temporary folder. "
 	exit 1
 }
@@ -44,7 +44,7 @@ root2=""
 program=""
 kill_tmp=1         #-> default: kill temporary root
 #-> home directory
-home=`dirname $0`  #-> home directory
+home=`dirname $0`"/../"  #-> home directory
 
 
 #-> parse arguments
