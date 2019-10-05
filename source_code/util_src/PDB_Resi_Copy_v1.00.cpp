@@ -117,11 +117,12 @@ int PDB_Residue_Read(string &pdb,vector <string> &resi)
 		}
 		if(curr!=prev)
 		{
-			resi.push_back(curr);
+			resi.push_back(prev);
 			count++;
+			prev=curr;
 		}
 	}
-	if(curr!=prev)
+	if(prev!="")
 	{
 		resi.push_back(curr);
 		count++;
@@ -143,12 +144,17 @@ void PDB_Residue_Copy(string &pdb,FILE *fp,vector <string> &resi)
 		exit(-1);
 	}
 	int len;
-	int count=0;
+	int count=-1;
 	string orirec="";
 	for(;;)
 	{
 		if(!getline(fin,buf,'\n'))break;
 		len=(int)buf.length();
+		if(len>=3)
+		{
+			temp=buf.substr(0,3);
+			if(temp=="TER")continue;
+		}
 		if(len>=4)
 		{
 			temp=buf.substr(0,4);
