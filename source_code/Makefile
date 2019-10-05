@@ -48,10 +48,11 @@ util:
 	$(CXX) $(UTILS)PDB_Atom_Start.cpp $(FLAG) -o PDB_Atom_Start
 	$(CXX) $(UTILS)PDB_Resi_Start.cpp $(FLAG) -o PDB_Resi_Start
 	$(CXX) $(UTILS)PDB_Resi_Trans.cpp $(FLAG) -o PDB_Resi_Trans
+	$(CXX) $(UTILS)PDB_Resi_Copy.cpp $(FLAG) -o PDB_Resi_Copy
 	$(CXX) $(UTILS)PDB_Add_Chain.cpp $(FLAG) -o PDB_Add_Chain
 	mkdir -p ../util
 	mv Stat_List Fitting_EVD Domain_Proc PDB_File_Cut PDB_To_SEQ TopK_by_EVD List_Div_Shuf DeepSearch_Rank ../util
-	mv PDB_Replace_XYZ PDB_Atom_Start PDB_Resi_Start PDB_Resi_Trans PDB_Add_Chain ../util/
+	mv PDB_Replace_XYZ PDB_Atom_Start PDB_Resi_Start PDB_Resi_Trans PDB_Resi_Copy PDB_Add_Chain ../util/
 
 # clean all the temp files
 clean:
