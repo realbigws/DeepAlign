@@ -1,0 +1,13 @@
+#-------------
+# update:
+# (2018.12.04)
+#-------------
+
+We provide two reference systems:
+
+1) CAL1814        :  This dataset contains 1814 reference proteins according to HHpred.
+
+2) CATH2738       :  This dataset contains 2738 reference proteins according to CATH superfamily.
+
+By default, we will choose CAL1814 as the reference.
+
