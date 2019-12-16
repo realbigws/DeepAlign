@@ -18,7 +18,7 @@ function usage()
 	echo "    Search a template database to find structurally similar proteins for a query protein structure "
 	echo ""
 	echo "USAGE:  ./DeepAlign_Search.sh <-q query_pdb> [-l data_list] [-d data_db] [-L refer_list] [-D refer_db] "
-	echo "                              [-t tmsco] [-p pval] [-k topK] [-s score_func] [-C cut_alignment] [-c CPU_num]"
+	echo "                              [-t tmsco] [-p pval] [-k topK] [-f score_func] [-C cut_alignment] [-c CPU_num]"
 	echo "                              [-o output_root] [-O output_file] [-s sort] [-S options] [-H home] "
 	echo "Options:"
 	echo ""
@@ -43,7 +43,7 @@ function usage()
 	echo "                       set 0 to skip the re-align step and NO alignment; set -1 to scan ALL the input_list without filter."
 	echo "                       set -2 to scan ALL the refined alignment after filter."
 	echo ""
-	echo "-s score_func        : 1:distance-score,2:vector-score,4:evolution-score; these scores could be combined [default 7]"
+	echo "-f score_func        : 1:distance-score,2:vector-score,4:evolution-score; these scores could be combined [default 7]"
 	echo ""
 	echo "-C cut_alignment     : If specified, then the final template structure will be cut according to the alignment [default 0]"
 	echo ""
@@ -119,7 +119,7 @@ home=`dirname $0`               #-> home directory
 
 
 #-> parse arguments
-while getopts ":q:l:d:L:D:t:p:k:s:C:c:o:O:a:s:S:H:" opt;
+while getopts ":q:l:d:L:D:t:p:k:f:C:c:o:O:a:s:S:H:" opt;
 do
 	case $opt in
 	#-> required arguments
@@ -150,7 +150,7 @@ do
 	k)
 		topK=$OPTARG
 		;;
-	s)
+	f)
 		score_func=$OPTARG
 		;;
 	C)
