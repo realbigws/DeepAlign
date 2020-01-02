@@ -210,7 +210,7 @@ int Seqres_DynaProg(string &seqres,string &ami_,int *mapping)
 	double sco;
 	int matchs;
 	vector<pair<int,int> > WWW_alignment;
-	matchs=WWW_Advance_Align_Dyna_Prog_Double(n1,n2,score,-11,-1,-110,-10,0,0,-110,-110,
+	matchs=WWW_Advance_Align_Dyna_Prog_Double(n1,n2,score,-11,-1,-110,-10,0,0,0,0,
 		WWW_alignment,sco);
 	int lcmp=(int)WWW_alignment.size();
 	
